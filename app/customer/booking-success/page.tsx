@@ -1,44 +1,57 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { useSearchParams, useRouter } from "next/navigation"
-import { DashboardLayout } from "@/components/layout/dashboard-layout"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
-import { CheckCircle, Calendar, Package, MapPin, CreditCard, Download, ArrowRight, Home } from "lucide-react"
-import { DUMMY_BOOKINGS } from "@/lib/data"
-import type { Booking } from "@/lib/types"
+import { useEffect, useState } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { DashboardLayout } from "@/components/layout/dashboard-layout";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import {
+  CheckCircle,
+  Calendar,
+  Package,
+  MapPin,
+  CreditCard,
+  Download,
+  ArrowRight,
+  Home,
+} from "lucide-react";
+import { DUMMY_BOOKINGS } from "@/lib/data";
+import type { Booking } from "@/lib/types";
 
 export default function BookingSuccessPage() {
-  const searchParams = useSearchParams()
-  const router = useRouter()
-  const bookingId = searchParams.get("bookingId")
-  const [booking, setBooking] = useState<Booking | null>(null)
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const bookingId = searchParams.get("bookingId");
+  const [booking, setBooking] = useState<Booking | null>(null);
 
   useEffect(() => {
     if (bookingId) {
       // In a real app, this would fetch from API
-      const foundBooking = DUMMY_BOOKINGS.find((b) => b.id === bookingId)
+      const foundBooking = DUMMY_BOOKINGS.find((b) => b.id === bookingId);
       if (foundBooking) {
-        setBooking(foundBooking)
+        setBooking(foundBooking);
       }
     }
-  }, [bookingId])
+  }, [bookingId]);
 
   if (!booking) {
     return (
       <DashboardLayout requiredRole="customer">
         <div className="min-h-[400px] flex items-center justify-center">
           <div className="text-center">
-            <h1 className="text-2xl font-bold mb-4">Booking Not Found</h1>
-            <p className="text-muted-foreground mb-4">The booking you're looking for doesn't exist.</p>
-            <Button onClick={() => router.push("/customer/dashboard")}>Go to Dashboard</Button>
+            <h1 className="text-2xl font-bold mb-4">Booking Successful!!!</h1>
+            <p className="text-muted-foreground mb-4">
+              The booking is being submitted
+            </p>
+            <Button onClick={() => router.push("/customer/dashboard")}>
+              Go to Dashboard
+            </Button>
           </div>
         </div>
       </DashboardLayout>
-    )
+    );
   }
 
   return (
@@ -50,11 +63,16 @@ export default function BookingSuccessPage() {
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <CheckCircle className="h-8 w-8 text-green-600" />
             </div>
-            <h1 className="text-3xl font-bold text-green-800 mb-2">Booking Confirmed!</h1>
+            <h1 className="text-3xl font-bold text-green-800 mb-2">
+              Booking Confirmed!
+            </h1>
             <p className="text-green-700 mb-4">
-              Your rental booking has been successfully confirmed. We'll contact you soon with pickup details.
+              Your rental booking has been successfully confirmed. We'll contact
+              you soon with pickup details.
             </p>
-            <Badge className="bg-green-100 text-green-800 text-sm px-3 py-1">Booking ID: {booking.id}</Badge>
+            <Badge className="bg-green-100 text-green-800 text-sm px-3 py-1">
+              Booking ID: {booking.id}
+            </Badge>
           </CardContent>
         </Card>
 
@@ -70,8 +88,12 @@ export default function BookingSuccessPage() {
             <div className="grid md:grid-cols-2 gap-6">
               <div className="space-y-4">
                 <div>
-                  <h3 className="font-semibold text-lg">{booking.productName}</h3>
-                  <p className="text-muted-foreground">Quantity: {booking.quantity}</p>
+                  <h3 className="font-semibold text-lg">
+                    {booking.productName}
+                  </h3>
+                  <p className="text-muted-foreground">
+                    Quantity: {booking.quantity}
+                  </p>
                 </div>
 
                 <div className="space-y-2">
@@ -125,7 +147,9 @@ export default function BookingSuccessPage() {
                 {booking.notes && (
                   <div className="space-y-2">
                     <span className="text-sm font-medium">Special Notes</span>
-                    <p className="text-sm text-muted-foreground">{booking.notes}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {booking.notes}
+                    </p>
                   </div>
                 )}
               </div>
@@ -166,7 +190,9 @@ export default function BookingSuccessPage() {
               <span>₹{booking.securityDeposit}</span>
             </div>
             <div className="mt-4">
-              <Badge className="bg-green-100 text-green-800">Payment Status: {booking.paymentStatus}</Badge>
+              <Badge className="bg-green-100 text-green-800">
+                Payment Status: {booking.paymentStatus}
+              </Badge>
             </div>
           </CardContent>
         </Card>
@@ -185,7 +211,8 @@ export default function BookingSuccessPage() {
                 <div>
                   <h4 className="font-semibold">Confirmation Call</h4>
                   <p className="text-sm text-muted-foreground">
-                    Our team will contact you within 2 hours to confirm pickup details and timing.
+                    Our team will contact you within 2 hours to confirm pickup
+                    details and timing.
                   </p>
                 </div>
               </div>
@@ -196,7 +223,8 @@ export default function BookingSuccessPage() {
                 <div>
                   <h4 className="font-semibold">Pickup Preparation</h4>
                   <p className="text-sm text-muted-foreground">
-                    Please bring a valid ID and be ready at the scheduled pickup time.
+                    Please bring a valid ID and be ready at the scheduled pickup
+                    time.
                   </p>
                 </div>
               </div>
@@ -207,7 +235,8 @@ export default function BookingSuccessPage() {
                 <div>
                   <h4 className="font-semibold">Enjoy Your Rental</h4>
                   <p className="text-sm text-muted-foreground">
-                    Use the product as needed and return it in good condition by the return date.
+                    Use the product as needed and return it in good condition by
+                    the return date.
                   </p>
                 </div>
               </div>
@@ -217,7 +246,9 @@ export default function BookingSuccessPage() {
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4">
-          <Button className="flex-1" onClick={() => router.push("/customer/my-bookings")}>
+          <Button
+            className="flex-1"
+            onClick={() => router.push("/customer/my-bookings")}>
             <Package className="h-4 w-4 mr-2" />
             View My Bookings
             <ArrowRight className="h-4 w-4 ml-2" />
@@ -225,8 +256,7 @@ export default function BookingSuccessPage() {
           <Button
             variant="outline"
             className="flex-1 bg-transparent"
-            onClick={() => router.push("/customer/dashboard")}
-          >
+            onClick={() => router.push("/customer/dashboard")}>
             <Home className="h-4 w-4 mr-2" />
             Back to Dashboard
           </Button>
@@ -242,13 +272,20 @@ export default function BookingSuccessPage() {
             <div className="text-center">
               <h3 className="font-semibold text-blue-800 mb-2">Need Help?</h3>
               <p className="text-blue-700 text-sm mb-4">
-                Our customer support team is here to help you with any questions about your booking.
+                Our customer support team is here to help you with any questions
+                about your booking.
               </p>
               <div className="flex flex-col sm:flex-row gap-2 justify-center">
-                <Button size="sm" variant="outline" className="bg-white border-blue-300 text-blue-700">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="bg-white border-blue-300 text-blue-700">
                   Call Support: +91 9876543210
                 </Button>
-                <Button size="sm" variant="outline" className="bg-white border-blue-300 text-blue-700">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="bg-white border-blue-300 text-blue-700">
                   Email: support@rentalpro.com
                 </Button>
               </div>
@@ -257,5 +294,5 @@ export default function BookingSuccessPage() {
         </Card>
       </div>
     </DashboardLayout>
-  )
+  );
 }

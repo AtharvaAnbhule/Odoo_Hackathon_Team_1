@@ -293,7 +293,6 @@ export function CustomerDashboard() {
         </CardContent>
       </Card>
 
-      {/* Booking History */}
       <Card>
         <CardHeader>
           <CardTitle>Booking History</CardTitle>
@@ -350,7 +349,6 @@ export function CustomerDashboard() {
         </CardContent>
       </Card>
 
-      {/* Quick Actions */}
       <Card>
         <CardHeader>
           <CardTitle>Quick Actions</CardTitle>
@@ -377,7 +375,6 @@ export function CustomerDashboard() {
         </CardContent>
       </Card>
 
-      {/* Product Catalog Modal */}
       <Dialog open={showProductCatalog} onOpenChange={setShowProductCatalog}>
         <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -388,7 +385,6 @@ export function CustomerDashboard() {
         </DialogContent>
       </Dialog>
 
-      {/* Calendar Modal */}
       <Dialog open={showCalendar} onOpenChange={setShowCalendar}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -401,7 +397,6 @@ export function CustomerDashboard() {
         </DialogContent>
       </Dialog>
 
-      {/* Notifications Modal */}
       <Dialog open={showNotifications} onOpenChange={setShowNotifications}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -414,7 +409,6 @@ export function CustomerDashboard() {
         </DialogContent>
       </Dialog>
 
-      {/* Profile Modal */}
       <Dialog open={showProfile} onOpenChange={setShowProfile}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -427,7 +421,6 @@ export function CustomerDashboard() {
         </DialogContent>
       </Dialog>
 
-      {/* Booking Flow */}
       {selectedProduct && (
         <BookingFlow
           open={showBooking}

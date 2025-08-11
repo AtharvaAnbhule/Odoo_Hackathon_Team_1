@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -29,7 +29,7 @@ import {
   CheckCircle,
   FolderPlus,
 } from "lucide-react";
-import { DUMMY_BOOKINGS, DUMMY_PRODUCTS, DUMMY_USERS } from "@/lib/data";
+import { DUMMY_BOOKINGS, DUMMY_USERS } from "@/lib/data";
 import { AddBookingModal } from "@/components/admin/add-booking-modal";
 import { AddProductModal } from "@/components/admin/add-product-modal";
 import { ReportsDashboard } from "@/components/admin/reports-dashboard";
@@ -45,6 +45,7 @@ import type { Booking, Product } from "@/lib/types";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { Textarea } from "../ui/textarea";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function AdminDashboard() {
   const { toast } = useToast();
@@ -53,12 +54,39 @@ export function AdminDashboard() {
   const [showReports, setShowReports] = useState(false);
   const [showAddCategory, setShowAddCategory] = useState(false);
   const [bookings, setBookings] = useState(DUMMY_BOOKINGS);
-  const [products, setProducts] = useState(DUMMY_PRODUCTS);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loadingProducts, setLoadingProducts] = useState(true);
 
   // Category form state
   const [categoryName, setCategoryName] = useState("");
   const [categoryDescription, setCategoryDescription] = useState("");
   const [categoryImage, setCategoryImage] = useState("");
+
+  // Fetch products from API
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoadingProducts(true);
+        const response = await fetch("http://localhost:5000/api/products");
+        if (!response.ok) {
+          throw new Error("Failed to fetch products");
+        }
+        const data = await response.json();
+        setProducts(data.data); // Access the data property of the response
+      } catch (error) {
+        console.error("Error fetching products:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load products",
+          variant: "destructive",
+        });
+      } finally {
+        setLoadingProducts(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
 
   // Calculate metrics
   const totalRevenue = bookings.reduce(
@@ -69,10 +97,6 @@ export function AdminDashboard() {
   const totalProducts = products.length;
   const totalCustomers = DUMMY_USERS.filter(
     (u) => u.role === "customer"
-  ).length;
-  const pendingBookings = bookings.filter((b) => b.status === "pending").length;
-  const lowStockProducts = products.filter(
-    (p) => p.stock < p.totalStock * 0.2
   ).length;
 
   const recentBookings = bookings
@@ -145,6 +169,15 @@ export function AdminDashboard() {
         return "bg-gray-100 text-gray-800";
     }
   };
+
+  const getStockStatus = (stock: number, totalStock: number) => {
+    const percentage = (stock / totalStock) * 100;
+    if (percentage === 0) return "bg-red-100 text-red-800";
+    if (percentage < 20) return "bg-orange-100 text-orange-800";
+    if (percentage < 50) return "bg-yellow-100 text-yellow-800";
+    return "bg-green-100 text-green-800";
+  };
+
   return (
     <div className="space-y-6">
       {/* Welcome Section */}
@@ -217,7 +250,9 @@ export function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalProducts}</div>
-            <p className="text-xs text-muted-foreground">+3 new this month</p>
+            <p className="text-xs text-muted-foreground">
+              {loadingProducts ? "Loading..." : "+3 new this month"}
+            </p>
           </CardContent>
         </Card>
 
@@ -235,51 +270,122 @@ export function AdminDashboard() {
         </Card>
       </div>
 
-      {/* Alerts & Notifications */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card className="border-yellow-200 bg-yellow-50">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-yellow-800">
-              Pending Bookings
-            </CardTitle>
-            <AlertTriangle className="h-4 w-4 text-yellow-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-yellow-800">
-              {pendingBookings}
+      {/* Products Table */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>Products Inventory</CardTitle>
+            <CardDescription>
+              Manage all available rental products
+            </CardDescription>
+          </div>
+          <Button onClick={() => setShowAddProduct(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Add Product
+          </Button>
+        </CardHeader>
+        <CardContent>
+          {loadingProducts ? (
+            <div className="space-y-4">
+              {[...Array(5)].map((_, i) => (
+                <Skeleton key={i} className="h-12 w-full" />
+              ))}
             </div>
-            <p className="text-xs text-yellow-600">Require attention</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-red-200 bg-red-50">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-red-800">
-              Low Stock Items
-            </CardTitle>
-            <Package className="h-4 w-4 text-red-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-800">
-              {lowStockProducts}
+          ) : products.length > 0 ? (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Product</TableHead>
+                  <TableHead>Category</TableHead>
+                  <TableHead>Price</TableHead>
+                  <TableHead>Stock</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {products.map((product) => (
+                  <TableRow key={product._id}>
+                    <TableCell className="font-medium">
+                      <div className="flex items-center gap-3">
+                        {product.images?.find((img) => img.isPrimary) ? (
+                          <img
+                            src={
+                              product.images.find((img) => img.isPrimary)?.url
+                            }
+                            alt={product.name}
+                            className="h-10 w-10 rounded-md object-cover"
+                          />
+                        ) : (
+                          <div className="h-10 w-10 rounded-md bg-gray-200 flex items-center justify-center">
+                            <Package className="h-5 w-5 text-gray-500" />
+                          </div>
+                        )}
+                        <div>
+                          <div className="font-medium">{product.name}</div>
+                          <div className="text-sm text-gray-500">
+                            {product.tags?.join(", ") || "No tags"}
+                          </div>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      {product.tags?.join(", ") || "No tags"}
+                    </TableCell>
+                    <TableCell>
+                      ₹{product.basePrice}/{product.unit}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <div className="w-20 bg-gray-200 rounded-full h-2">
+                          <div
+                            className="bg-green-500 h-2 rounded-full"
+                            style={{
+                              width: `${Math.round(
+                                (product.stock / product.totalStock) * 100
+                              )}%`,
+                            }}
+                          />
+                        </div>
+                        <span>
+                          {product.stock}/{product.totalStock}
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        className={getStockStatus(
+                          product.stock,
+                          product.totalStock
+                        )}>
+                        {product.stock === 0
+                          ? "Out of Stock"
+                          : product.stock < product.totalStock * 0.2
+                          ? "Low Stock"
+                          : "In Stock"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button variant="ghost" size="sm">
+                        Edit
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-8">
+              <Package className="h-12 w-12 text-gray-400 mb-4" />
+              <p className="text-gray-500">No products found</p>
+              <Button onClick={() => setShowAddProduct(true)} className="mt-4">
+                <Plus className="h-4 w-4 mr-2" />
+                Add Product
+              </Button>
             </div>
-            <p className="text-xs text-red-600">Need restocking</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-green-200 bg-green-50">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-green-800">
-              System Status
-            </CardTitle>
-            <CheckCircle className="h-4 w-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-800">All Good</div>
-            <p className="text-xs text-green-600">Systems operational</p>
-          </CardContent>
-        </Card>
-      </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Recent Bookings */}
       <Card>
