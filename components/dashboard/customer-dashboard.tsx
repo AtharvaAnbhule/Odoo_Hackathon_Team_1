@@ -123,7 +123,6 @@ export function CustomerDashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Welcome Section */}
       <Card className="bg-gradient-to-r from-blue-500 to-purple-600 text-white">
         <CardHeader>
           <CardTitle className="text-2xl">
@@ -150,11 +149,14 @@ export function CustomerDashboard() {
               <Plus className="h-4 w-4 mr-2" />
               AI Suggestion
             </Button>
+            <Button onClick={() => router.push("/ai-speaker")}>
+              <Plus className="h-4 w-4 mr-2" />
+              AI Speaker
+            </Button>
           </div>
         </CardContent>
       </Card>
 
-      {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -209,7 +211,6 @@ export function CustomerDashboard() {
         </Card>
       </div>
 
-      {/* Current Rentals */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
