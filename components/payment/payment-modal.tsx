@@ -92,8 +92,7 @@ export function PaymentModal({
 
     try {
       if (selectedMethod === "cash") {
-        // Handle cash payment
-        await new Promise((resolve) => setTimeout(resolve, 1500)); // Simulate processing
+        await new Promise((resolve) => setTimeout(resolve, 1500));
 
         const paymentData = {
           method: "cash",
@@ -111,7 +110,6 @@ export function PaymentModal({
         });
         onOpenChange(false);
       } else {
-        // Handle Razorpay payment
         const order = await createRazorpayOrder(calculateTotal());
 
         await initiateRazorpayPayment({
@@ -179,64 +177,6 @@ export function PaymentModal({
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Booking Summary */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Booking Summary</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex justify-between">
-                <span className="font-medium">{booking.productName}</span>
-                <span>₹{booking.basePrice}</span>
-              </div>
-              <div className="flex justify-between text-sm text-muted-foreground">
-                <span>Quantity: {booking.quantity}</span>
-                <span>
-                  Duration:{" "}
-                  {Math.ceil(
-                    (new Date(booking.endDate).getTime() -
-                      new Date(booking.startDate).getTime()) /
-                      (1000 * 60 * 60 * 24)
-                  )}{" "}
-                  days
-                </span>
-              </div>
-              {booking.discountAmount > 0 && (
-                <div className="flex justify-between text-green-600">
-                  <span>Discount</span>
-                  <span>-₹{booking.discountAmount}</span>
-                </div>
-              )}
-              <div className="flex justify-between">
-                <span>Tax</span>
-                <span>₹{booking.taxAmount}</span>
-              </div>
-              <Separator />
-              <div className="flex justify-between font-semibold">
-                <span>Subtotal</span>
-                <span>₹{booking.totalPrice}</span>
-              </div>
-              {selectedMethodData?.fee && selectedMethodData.fee > 0 && (
-                <div className="flex justify-between text-sm">
-                  <span>Processing Fee ({selectedMethodData.fee}%)</span>
-                  <span>
-                    ₹
-                    {(
-                      (booking.totalPrice * selectedMethodData.fee) /
-                      100
-                    ).toFixed(2)}
-                  </span>
-                </div>
-              )}
-              <Separator />
-              <div className="flex justify-between text-lg font-bold">
-                <span>Total Amount</span>
-                <span>₹{calculateTotal().toFixed(2)}</span>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Payment Methods */}
           <Card>
             <CardHeader>
               <CardTitle className="text-lg">Payment Method</CardTitle>
@@ -290,7 +230,6 @@ export function PaymentModal({
             </CardContent>
           </Card>
 
-          {/* Payment Security Info */}
           <Alert>
             <Shield className="h-4 w-4" />
             <AlertDescription>
@@ -299,7 +238,6 @@ export function PaymentModal({
             </AlertDescription>
           </Alert>
 
-          {/* Action Buttons */}
           <div className="flex gap-4">
             <Button
               variant="outline"
@@ -329,7 +267,7 @@ export function PaymentModal({
                   ) : (
                     <>
                       <CreditCard className="mr-2 h-4 w-4" />
-                      Pay ₹{calculateTotal().toFixed(2)}
+                      Pay
                     </>
                   )}
                 </>
@@ -337,7 +275,6 @@ export function PaymentModal({
             </Button>
           </div>
 
-          {/* Additional Info */}
           {selectedMethod === "cash" && (
             <Alert>
               <Clock className="h-4 w-4" />

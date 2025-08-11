@@ -29,7 +29,6 @@ import {
   CheckCircle,
   FolderPlus,
 } from "lucide-react";
-import { DUMMY_BOOKINGS, DUMMY_USERS } from "@/lib/data";
 import { AddBookingModal } from "@/components/admin/add-booking-modal";
 import { AddProductModal } from "@/components/admin/add-product-modal";
 import { ReportsDashboard } from "@/components/admin/reports-dashboard";
@@ -41,7 +40,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import type { Booking, Product } from "@/lib/types";
+import type { Booking, Product, User } from "@/lib/types";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { Textarea } from "../ui/textarea";
@@ -53,16 +52,45 @@ export function AdminDashboard() {
   const [showAddProduct, setShowAddProduct] = useState(false);
   const [showReports, setShowReports] = useState(false);
   const [showAddCategory, setShowAddCategory] = useState(false);
-  const [bookings, setBookings] = useState(DUMMY_BOOKINGS);
+  const [showManageUsers, setShowManageUsers] = useState(false);
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [loadingBookings, setLoadingBookings] = useState(true);
   const [products, setProducts] = useState<Product[]>([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
+  const [users, setUsers] = useState<User[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState(true);
 
-  // Category form state
   const [categoryName, setCategoryName] = useState("");
   const [categoryDescription, setCategoryDescription] = useState("");
   const [categoryImage, setCategoryImage] = useState("");
 
-  // Fetch products from API
+  // Fetch bookings from MongoDB
+  useEffect(() => {
+    const fetchBookings = async () => {
+      try {
+        setLoadingBookings(true);
+        const response = await fetch("http://localhost:5000/api/bookings");
+        if (!response.ok) {
+          throw new Error("Failed to fetch bookings");
+        }
+        const data = await response.json();
+        setBookings(data.bookings || []);
+      } catch (error) {
+        console.error("Error fetching bookings:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load bookings",
+          variant: "destructive",
+        });
+      } finally {
+        setLoadingBookings(false);
+      }
+    };
+
+    fetchBookings();
+  }, []);
+
+  // Fetch products
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -72,7 +100,7 @@ export function AdminDashboard() {
           throw new Error("Failed to fetch products");
         }
         const data = await response.json();
-        setProducts(data.data); // Access the data property of the response
+        setProducts(data.data || []);
       } catch (error) {
         console.error("Error fetching products:", error);
         toast({
@@ -88,16 +116,39 @@ export function AdminDashboard() {
     fetchProducts();
   }, []);
 
-  // Calculate metrics
+  // Fetch users
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        setLoadingUsers(true);
+        const response = await fetch("http://localhost:5000/api/users");
+        if (!response.ok) {
+          throw new Error("Failed to fetch users");
+        }
+        const data = await response.json();
+        setUsers(data.data || []);
+      } catch (error) {
+        console.error("Error fetching users:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load users",
+          variant: "destructive",
+        });
+      } finally {
+        setLoadingUsers(false);
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
   const totalRevenue = bookings.reduce(
-    (sum, booking) => sum + booking.totalPrice,
+    (sum, booking) => sum + (booking.totalPrice || 0),
     0
   );
   const totalBookings = bookings.length;
   const totalProducts = products.length;
-  const totalCustomers = DUMMY_USERS.filter(
-    (u) => u.role === "customer"
-  ).length;
+  const totalCustomers = users.filter((u) => u.role === "customer").length;
 
   const recentBookings = bookings
     .sort(
@@ -112,6 +163,12 @@ export function AdminDashboard() {
 
   const handleProductAdded = (newProduct: Product) => {
     setProducts((prev) => [newProduct, ...prev]);
+  };
+
+  const handleUserUpdated = (updatedUser: User) => {
+    setUsers((prev) =>
+      prev.map((user) => (user._id === updatedUser._id ? updatedUser : user))
+    );
   };
 
   const handleCategorySubmit = async () => {
@@ -178,9 +235,19 @@ export function AdminDashboard() {
     return "bg-green-100 text-green-800";
   };
 
+  const getRoleBadge = (role: string) => {
+    switch (role) {
+      case "admin":
+        return "bg-purple-100 text-purple-800";
+      case "staff":
+        return "bg-blue-100 text-blue-800";
+      default:
+        return "bg-green-100 text-green-800";
+    }
+  };
+
   return (
     <div className="space-y-6">
-      {/* Welcome Section */}
       <Card className="bg-gradient-to-r from-purple-500 to-blue-600 text-white">
         <CardHeader>
           <CardTitle className="text-2xl">Admin Dashboard</CardTitle>
@@ -209,7 +276,6 @@ export function AdminDashboard() {
         </CardContent>
       </Card>
 
-      {/* Key Metrics */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -221,7 +287,7 @@ export function AdminDashboard() {
               ₹{totalRevenue.toLocaleString()}
             </div>
             <p className="text-xs text-muted-foreground">
-              +12.5% from last month
+              {loadingBookings ? "Loading..." : "+12.5% from last month"}
             </p>
           </CardContent>
         </Card>
@@ -236,7 +302,7 @@ export function AdminDashboard() {
           <CardContent>
             <div className="text-2xl font-bold">{totalBookings}</div>
             <p className="text-xs text-muted-foreground">
-              +8.2% from last month
+              {loadingBookings ? "Loading..." : "+8.2% from last month"}
             </p>
           </CardContent>
         </Card>
@@ -265,12 +331,13 @@ export function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalCustomers}</div>
-            <p className="text-xs text-muted-foreground">+5 new this week</p>
+            <p className="text-xs text-muted-foreground">
+              {loadingUsers ? "Loading..." : "+5 new this week"}
+            </p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Products Table */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
@@ -305,7 +372,7 @@ export function AdminDashboard() {
               </TableHeader>
               <TableBody>
                 {products.map((product) => (
-                  <TableRow key={product._id}>
+                  <TableRow key={product.id}>
                     <TableCell className="font-medium">
                       <div className="flex items-center gap-3">
                         {product.images?.find((img) => img.isPrimary) ? (
@@ -387,7 +454,6 @@ export function AdminDashboard() {
         </CardContent>
       </Card>
 
-      {/* Recent Bookings */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
@@ -400,42 +466,60 @@ export function AdminDashboard() {
           </Button>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Booking ID</TableHead>
-                <TableHead>Customer</TableHead>
-                <TableHead>Product</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Amount</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {recentBookings.map((booking) => (
-                <TableRow key={booking.id}>
-                  <TableCell className="font-medium">{booking.id}</TableCell>
-                  <TableCell>{booking.customerName}</TableCell>
-                  <TableCell>{booking.productName}</TableCell>
-                  <TableCell>
-                    {new Date(booking.createdAt).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell>
-                    <Badge className={getStatusColor(booking.status)}>
-                      {booking.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    ₹{booking.totalPrice}
-                  </TableCell>
-                </TableRow>
+          {loadingBookings ? (
+            <div className="space-y-4">
+              {[...Array(5)].map((_, i) => (
+                <Skeleton key={i} className="h-12 w-full" />
               ))}
-            </TableBody>
-          </Table>
+            </div>
+          ) : bookings.length > 0 ? (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Booking ID</TableHead>
+                  <TableHead>Customer</TableHead>
+                  <TableHead>Product</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Amount</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {recentBookings.map((booking) => (
+                  <TableRow key={booking._id}>
+                    <TableCell className="font-medium">
+                      {booking._id?.toString().substring(0, 8) || "N/A"}
+                    </TableCell>
+                    <TableCell>{booking.customerName || "N/A"}</TableCell>
+                    <TableCell>{booking.productName || "N/A"}</TableCell>
+                    <TableCell>
+                      {new Date(booking.createdAt).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell>
+                      <Badge className={getStatusColor(booking.status)}>
+                        {booking.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      ₹{booking.totalPrice}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-8">
+              <Calendar className="h-12 w-12 text-gray-400 mb-4" />
+              <p className="text-gray-500">No bookings found</p>
+              <Button onClick={() => setShowAddBooking(true)} className="mt-4">
+                <Plus className="h-4 w-4 mr-2" />
+                Add Booking
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
 
-      {/* Quick Actions */}
       <Card>
         <CardHeader>
           <CardTitle>Quick Actions</CardTitle>
@@ -505,7 +589,10 @@ export function AdminDashboard() {
                 </div>
               </DialogContent>
             </Dialog>
-            <Button variant="outline" className="h-20 flex-col bg-transparent">
+            <Button
+              variant="outline"
+              className="h-20 flex-col bg-transparent"
+              onClick={() => setShowManageUsers(true)}>
               <Users className="h-6 w-6 mb-2" />
               Manage Users
             </Button>
@@ -519,21 +606,18 @@ export function AdminDashboard() {
         </CardContent>
       </Card>
 
-      {/* Add Booking Modal */}
       <AddBookingModal
         open={showAddBooking}
         onOpenChange={setShowAddBooking}
         onBookingAdded={handleBookingAdded}
       />
 
-      {/* Add Product Modal */}
       <AddProductModal
         open={showAddProduct}
         onOpenChange={setShowAddProduct}
         onProductAdded={handleProductAdded}
       />
 
-      {/* Reports Modal */}
       <Dialog open={showReports} onOpenChange={setShowReports}>
         <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -542,7 +626,93 @@ export function AdminDashboard() {
               Comprehensive business insights and analytics
             </DialogDescription>
           </DialogHeader>
-          <ReportsDashboard />
+          <ReportsDashboard bookings={bookings} products={products} />
+        </DialogContent>
+      </Dialog>
+
+      {/* User Management Dialog */}
+      <Dialog open={showManageUsers} onOpenChange={setShowManageUsers}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>User Management</DialogTitle>
+            <DialogDescription>
+              View and manage all system users
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            {loadingUsers ? (
+              <div className="space-y-4">
+                {[...Array(5)].map((_, i) => (
+                  <Skeleton key={i} className="h-12 w-full" />
+                ))}
+              </div>
+            ) : users.length > 0 ? (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Role</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {users.map((user) => (
+                    <TableRow key={user._id}>
+                      <TableCell className="font-medium">
+                        <div className="flex items-center gap-3">
+                          {user.profilePicture ? (
+                            <img
+                              src={user.profilePicture}
+                              alt={user.name}
+                              className="h-10 w-10 rounded-full object-cover"
+                            />
+                          ) : (
+                            <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
+                              <Users className="h-5 w-5 text-gray-500" />
+                            </div>
+                          )}
+                          <div>
+                            <div className="font-medium">{user.name}</div>
+                            <div className="text-sm text-gray-500">
+                              {user.phone || "No phone"}
+                            </div>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>{user.email}</TableCell>
+                      <TableCell>
+                        <Badge className={getRoleBadge(user.role)}>
+                          {user.role}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          className={
+                            user.isActive
+                              ? "bg-green-100 text-green-800"
+                              : "bg-red-100 text-red-800"
+                          }>
+                          {user.isActive ? "Active" : "Inactive"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button variant="ghost" size="sm">
+                          Edit
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-8">
+                <Users className="h-12 w-12 text-gray-400 mb-4" />
+                <p className="text-gray-500">No users found</p>
+              </div>
+            )}
+          </div>
         </DialogContent>
       </Dialog>
     </div>

@@ -1,34 +1,54 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Calendar } from "@/components/ui/calendar"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { CalendarIcon, User, Package, Plus, Minus } from "lucide-react"
-import { format, addDays, differenceInDays } from "date-fns"
-import { cn } from "@/lib/utils"
-import { DUMMY_PRODUCTS, DUMMY_USERS } from "@/lib/data"
-import { useToast } from "@/hooks/use-toast"
-import type { Booking } from "@/lib/types"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { CalendarIcon, User, Package, Plus, Minus } from "lucide-react";
+import { format, addDays, differenceInDays } from "date-fns";
+import { cn } from "@/lib/utils";
+import { DUMMY_PRODUCTS, DUMMY_USERS } from "@/lib/data";
+import { useToast } from "@/hooks/use-toast";
+import type { Booking } from "@/lib/types";
 
 interface AddBookingModalProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  onBookingAdded: (booking: Booking) => void
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onBookingAdded: (booking: Booking) => void;
 }
 
-export function AddBookingModal({ open, onOpenChange, onBookingAdded }: AddBookingModalProps) {
-  const { toast } = useToast()
-  const [loading, setLoading] = useState(false)
+export function AddBookingModal({
+  open,
+  onOpenChange,
+  onBookingAdded,
+}: AddBookingModalProps) {
+  const { toast } = useToast();
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     customerId: "",
     productId: "",
@@ -38,36 +58,56 @@ export function AddBookingModal({ open, onOpenChange, onBookingAdded }: AddBooki
     notes: "",
     pickupLocation: "Main Store",
     returnLocation: "Main Store",
-  })
+  });
 
-  const selectedProduct = DUMMY_PRODUCTS.find((p) => p.id === formData.productId)
-  const selectedCustomer = DUMMY_USERS.find((u) => u.id === formData.customerId)
+  const selectedProduct = DUMMY_PRODUCTS.find(
+    (p) => p.id === formData.productId
+  );
+  const selectedCustomer = DUMMY_USERS.find(
+    (u) => u.id === formData.customerId
+  );
 
   const calculatePricing = () => {
     if (!selectedProduct)
-      return { days: 0, baseAmount: 0, discountAmount: 0, taxAmount: 0, totalPrice: 0, securityDeposit: 0 }
+      return {
+        days: 0,
+        baseAmount: 0,
+        discountAmount: 0,
+        taxAmount: 0,
+        totalPrice: 0,
+        securityDeposit: 0,
+      };
 
-    const days = Math.max(1, differenceInDays(formData.endDate, formData.startDate))
-    const baseAmount = selectedProduct.basePrice * formData.quantity * days
-    const discountAmount = baseAmount * 0.1 // 10% discount
-    const taxAmount = (baseAmount - discountAmount) * 0.09 // 9% tax
-    const totalPrice = baseAmount - discountAmount + taxAmount
-    const securityDeposit = selectedProduct.basePrice * formData.quantity * 0.5
+    const days = Math.max(
+      1,
+      differenceInDays(formData.endDate, formData.startDate)
+    );
+    const baseAmount = selectedProduct.basePrice * formData.quantity * days;
+    const discountAmount = baseAmount * 0.1;
+    const taxAmount = (baseAmount - discountAmount) * 0.09;
+    const totalPrice = baseAmount - discountAmount + taxAmount;
+    const securityDeposit = selectedProduct.basePrice * formData.quantity * 0.5;
 
-    return { days, baseAmount, discountAmount, taxAmount, totalPrice, securityDeposit }
-  }
+    return {
+      days,
+      baseAmount,
+      discountAmount,
+      taxAmount,
+      totalPrice,
+      securityDeposit,
+    };
+  };
 
-  const pricing = calculatePricing()
+  const pricing = calculatePricing();
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!selectedProduct || !selectedCustomer) return
+    e.preventDefault();
+    if (!selectedProduct || !selectedCustomer) return;
 
-    setLoading(true)
+    setLoading(true);
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500))
+      await new Promise((resolve) => setTimeout(resolve, 1500));
 
       const newBooking: Booking = {
         id: `BK${Date.now()}`,
@@ -93,12 +133,11 @@ export function AddBookingModal({ open, onOpenChange, onBookingAdded }: AddBooki
         pickupLocation: formData.pickupLocation,
         returnLocation: formData.returnLocation,
         securityDeposit: pricing.securityDeposit,
-      }
+      };
 
-      onBookingAdded(newBooking)
-      onOpenChange(false)
+      onBookingAdded(newBooking);
+      onOpenChange(false);
 
-      // Reset form
       setFormData({
         customerId: "",
         productId: "",
@@ -108,81 +147,92 @@ export function AddBookingModal({ open, onOpenChange, onBookingAdded }: AddBooki
         notes: "",
         pickupLocation: "Main Store",
         returnLocation: "Main Store",
-      })
+      });
 
       toast({
         title: "Booking Created",
         description: `Booking for ${selectedProduct.name} has been created successfully.`,
-      })
+      });
     } catch (error) {
       toast({
         title: "Error",
         description: "Failed to create booking. Please try again.",
         variant: "destructive",
-      })
+      });
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
-  const handleDateSelect = (field: "startDate" | "endDate", date: Date | undefined) => {
-    if (!date) return
+  const handleDateSelect = (
+    field: "startDate" | "endDate",
+    date: Date | undefined
+  ) => {
+    if (!date) return;
 
     setFormData((prev) => {
-      const newData = { ...prev, [field]: date }
+      const newData = { ...prev, [field]: date };
 
-      // Ensure end date is after start date
       if (field === "startDate" && date >= prev.endDate) {
-        newData.endDate = addDays(date, 1)
+        newData.endDate = addDays(date, 1);
       }
       if (field === "endDate" && date <= prev.startDate) {
-        newData.startDate = addDays(date, -1)
+        newData.startDate = addDays(date, -1);
       }
 
-      return newData
-    })
-  }
+      return newData;
+    });
+  };
 
   const handleQuantityChange = (change: number) => {
-    if (!selectedProduct) return
+    if (!selectedProduct) return;
     setFormData((prev) => ({
       ...prev,
-      quantity: Math.max(1, Math.min(selectedProduct.stock, prev.quantity + change)),
-    }))
-  }
+      quantity: Math.max(
+        1,
+        Math.min(selectedProduct.stock, prev.quantity + change)
+      ),
+    }));
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Create New Booking</DialogTitle>
-          <DialogDescription>Add a new booking for a customer</DialogDescription>
+          <DialogDescription>
+            Add a new booking for a customer
+          </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Customer & Product Selection */}
           <div className="grid md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="customer">Customer *</Label>
               <Select
                 value={formData.customerId}
-                onValueChange={(value) => setFormData({ ...formData, customerId: value })}
-              >
+                onValueChange={(value) =>
+                  setFormData({ ...formData, customerId: value })
+                }>
                 <SelectTrigger>
                   <SelectValue placeholder="Select customer" />
                 </SelectTrigger>
                 <SelectContent>
-                  {DUMMY_USERS.filter((u) => u.role === "customer").map((customer) => (
-                    <SelectItem key={customer.id} value={customer.id}>
-                      <div className="flex items-center gap-2">
-                        <User className="h-4 w-4" />
-                        <div>
-                          <div className="font-medium">{customer.name}</div>
-                          <div className="text-xs text-muted-foreground">{customer.email}</div>
+                  {DUMMY_USERS.filter((u) => u.role === "customer").map(
+                    (customer) => (
+                      <SelectItem key={customer.id} value={customer.id}>
+                        <div className="flex items-center gap-2">
+                          <User className="h-4 w-4" />
+                          <div>
+                            <div className="font-medium">{customer.name}</div>
+                            <div className="text-xs text-muted-foreground">
+                              {customer.email}
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </SelectItem>
-                  ))}
+                      </SelectItem>
+                    )
+                  )}
                 </SelectContent>
               </Select>
             </div>
@@ -191,20 +241,24 @@ export function AddBookingModal({ open, onOpenChange, onBookingAdded }: AddBooki
               <Label htmlFor="product">Product *</Label>
               <Select
                 value={formData.productId}
-                onValueChange={(value) => setFormData({ ...formData, productId: value })}
-              >
+                onValueChange={(value) =>
+                  setFormData({ ...formData, productId: value })
+                }>
                 <SelectTrigger>
                   <SelectValue placeholder="Select product" />
                 </SelectTrigger>
                 <SelectContent>
-                  {DUMMY_PRODUCTS.filter((p) => p.isRentable && p.stock > 0).map((product) => (
+                  {DUMMY_PRODUCTS.filter(
+                    (p) => p.isRentable && p.stock > 0
+                  ).map((product) => (
                     <SelectItem key={product.id} value={product.id}>
                       <div className="flex items-center gap-2">
                         <Package className="h-4 w-4" />
                         <div>
                           <div className="font-medium">{product.name}</div>
                           <div className="text-xs text-muted-foreground">
-                            ₹{product.basePrice}/{product.unit} • {product.stock} available
+                            ₹{product.basePrice}/{product.unit} •{" "}
+                            {product.stock} available
                           </div>
                         </div>
                       </div>
@@ -215,7 +269,6 @@ export function AddBookingModal({ open, onOpenChange, onBookingAdded }: AddBooki
             </div>
           </div>
 
-          {/* Date Selection */}
           <div className="grid md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Pickup Date *</Label>
@@ -225,11 +278,12 @@ export function AddBookingModal({ open, onOpenChange, onBookingAdded }: AddBooki
                     variant="outline"
                     className={cn(
                       "w-full justify-start text-left font-normal bg-transparent",
-                      !formData.startDate && "text-muted-foreground",
-                    )}
-                  >
+                      !formData.startDate && "text-muted-foreground"
+                    )}>
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {formData.startDate ? format(formData.startDate, "PPP") : "Pick a date"}
+                    {formData.startDate
+                      ? format(formData.startDate, "PPP")
+                      : "Pick a date"}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0">
@@ -252,11 +306,12 @@ export function AddBookingModal({ open, onOpenChange, onBookingAdded }: AddBooki
                     variant="outline"
                     className={cn(
                       "w-full justify-start text-left font-normal bg-transparent",
-                      !formData.endDate && "text-muted-foreground",
-                    )}
-                  >
+                      !formData.endDate && "text-muted-foreground"
+                    )}>
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {formData.endDate ? format(formData.endDate, "PPP") : "Pick a date"}
+                    {formData.endDate
+                      ? format(formData.endDate, "PPP")
+                      : "Pick a date"}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0">
@@ -272,7 +327,6 @@ export function AddBookingModal({ open, onOpenChange, onBookingAdded }: AddBooki
             </div>
           </div>
 
-          {/* Quantity & Locations */}
           <div className="grid md:grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label>Quantity *</Label>
@@ -282,15 +336,20 @@ export function AddBookingModal({ open, onOpenChange, onBookingAdded }: AddBooki
                   variant="outline"
                   size="sm"
                   onClick={() => handleQuantityChange(-1)}
-                  disabled={formData.quantity <= 1}
-                >
+                  disabled={formData.quantity <= 1}>
                   <Minus className="h-4 w-4" />
                 </Button>
                 <Input
                   type="number"
                   value={formData.quantity}
                   onChange={(e) =>
-                    setFormData({ ...formData, quantity: Math.max(1, Number.parseInt(e.target.value) || 1) })
+                    setFormData({
+                      ...formData,
+                      quantity: Math.max(
+                        1,
+                        Number.parseInt(e.target.value) || 1
+                      ),
+                    })
                   }
                   className="text-center"
                   min="1"
@@ -301,12 +360,18 @@ export function AddBookingModal({ open, onOpenChange, onBookingAdded }: AddBooki
                   variant="outline"
                   size="sm"
                   onClick={() => handleQuantityChange(1)}
-                  disabled={!selectedProduct || formData.quantity >= selectedProduct.stock}
-                >
+                  disabled={
+                    !selectedProduct ||
+                    formData.quantity >= selectedProduct.stock
+                  }>
                   <Plus className="h-4 w-4" />
                 </Button>
               </div>
-              {selectedProduct && <p className="text-xs text-muted-foreground">{selectedProduct.stock} available</p>}
+              {selectedProduct && (
+                <p className="text-xs text-muted-foreground">
+                  {selectedProduct.stock} available
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -314,7 +379,9 @@ export function AddBookingModal({ open, onOpenChange, onBookingAdded }: AddBooki
               <Input
                 id="pickupLocation"
                 value={formData.pickupLocation}
-                onChange={(e) => setFormData({ ...formData, pickupLocation: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, pickupLocation: e.target.value })
+                }
               />
             </div>
 
@@ -323,24 +390,26 @@ export function AddBookingModal({ open, onOpenChange, onBookingAdded }: AddBooki
               <Input
                 id="returnLocation"
                 value={formData.returnLocation}
-                onChange={(e) => setFormData({ ...formData, returnLocation: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, returnLocation: e.target.value })
+                }
               />
             </div>
           </div>
 
-          {/* Notes */}
           <div className="space-y-2">
             <Label htmlFor="notes">Special Notes (Optional)</Label>
             <Textarea
               id="notes"
               placeholder="Any special instructions or requirements..."
               value={formData.notes}
-              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, notes: e.target.value })
+              }
               rows={3}
             />
           </div>
 
-          {/* Pricing Summary */}
           {selectedProduct && (
             <Card>
               <CardHeader>
@@ -355,7 +424,8 @@ export function AddBookingModal({ open, onOpenChange, onBookingAdded }: AddBooki
                 </div>
                 <div className="flex justify-between">
                   <span>
-                    Base Price ({formData.quantity} × ₹{selectedProduct.basePrice} × {pricing.days})
+                    Base Price ({formData.quantity} × ₹
+                    {selectedProduct.basePrice} × {pricing.days})
                   </span>
                   <span>₹{pricing.baseAmount}</span>
                 </div>
@@ -380,17 +450,21 @@ export function AddBookingModal({ open, onOpenChange, onBookingAdded }: AddBooki
             </Card>
           )}
 
-          {/* Submit Buttons */}
           <div className="flex justify-end gap-4">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button type="submit" disabled={loading || !formData.customerId || !formData.productId}>
+            <Button
+              type="submit"
+              disabled={loading || !formData.customerId || !formData.productId}>
               {loading ? "Creating..." : "Create Booking"}
             </Button>
           </div>
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

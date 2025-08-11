@@ -274,7 +274,6 @@ export function ProductCatalog({ onBookProduct }: ProductCatalogProps) {
 
   return (
     <div className="space-y-6">
-      {/* Search and Filters */}
       <Card className="border-0 shadow-sm">
         <CardHeader className="pb-0">
           <CardTitle className="text-2xl">Browse Products</CardTitle>
@@ -379,7 +378,6 @@ export function ProductCatalog({ onBookProduct }: ProductCatalogProps) {
         </CardContent>
       </Card>
 
-      {/* Results Header */}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-semibold">
@@ -396,7 +394,6 @@ export function ProductCatalog({ onBookProduct }: ProductCatalogProps) {
         </Badge>
       </div>
 
-      {/* Products Grid/List */}
       {sortedProducts.length > 0 ? (
         <div
           className={
@@ -434,7 +431,6 @@ export function ProductCatalog({ onBookProduct }: ProductCatalogProps) {
         </Card>
       )}
 
-      {/* Product Details Dialog */}
       <Dialog
         open={!!selectedProduct}
         onOpenChange={(open) => !open && setSelectedProduct(null)}>

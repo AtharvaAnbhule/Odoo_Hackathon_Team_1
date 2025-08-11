@@ -1,21 +1,43 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Separator } from "@/components/ui/separator"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Eye, EyeOff, Mail, Lock, User, Phone, Package, ArrowLeft, CheckCircle } from "lucide-react"
-import { useAuth } from "@/contexts/auth-context"
-import { useToast } from "@/hooks/use-toast"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Separator } from "@/components/ui/separator";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Eye,
+  EyeOff,
+  Mail,
+  Lock,
+  User,
+  Phone,
+  Package,
+  ArrowLeft,
+  CheckCircle,
+} from "lucide-react";
+import { useAuth } from "@/contexts/auth-context";
+import { useToast } from "@/hooks/use-toast";
 
 export default function SignupPage() {
   const [formData, setFormData] = useState({
@@ -25,42 +47,41 @@ export default function SignupPage() {
     password: "",
     confirmPassword: "",
     role: "customer" as "customer" | "staff",
-  })
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [acceptTerms, setAcceptTerms] = useState(false)
-  const [error, setError] = useState("")
-  const { signup, loading } = useAuth()
-  const router = useRouter()
-  const { toast } = useToast()
+  });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [acceptTerms, setAcceptTerms] = useState(false);
+  const [error, setError] = useState("");
+  const { signup, loading } = useAuth();
+  const router = useRouter();
+  const { toast } = useToast();
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
-  }
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError("")
+    e.preventDefault();
+    setError("");
 
-    // Validation
     if (!formData.name || !formData.email || !formData.password) {
-      setError("Please fill in all required fields")
-      return
+      setError("Please fill in all required fields");
+      return;
     }
 
     if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match")
-      return
+      setError("Passwords do not match");
+      return;
     }
 
     if (formData.password.length < 6) {
-      setError("Password must be at least 6 characters long")
-      return
+      setError("Password must be at least 6 characters long");
+      return;
     }
 
     if (!acceptTerms) {
-      setError("Please accept the terms and conditions")
-      return
+      setError("Please accept the terms and conditions");
+      return;
     }
 
     const result = await signup({
@@ -69,22 +90,21 @@ export default function SignupPage() {
       phone: formData.phone,
       password: formData.password,
       role: formData.role,
-    })
+    });
 
     if (result.success) {
       toast({
         title: "Account Created Successfully!",
         description: "Welcome to RentalPro! Redirecting to your dashboard...",
-      })
+      });
 
-      // Redirect will be handled by the auth context
       setTimeout(() => {
-        window.location.reload()
-      }, 1000)
+        window.location.reload();
+      }, 1000);
     } else {
-      setError(result.error || "Signup failed")
+      setError(result.error || "Signup failed");
     }
-  }
+  };
 
   const benefits = [
     "Access to 1000+ quality products",
@@ -93,26 +113,31 @@ export default function SignupPage() {
     "Flexible rental periods",
     "Secure payment processing",
     "Mobile app access",
-  ]
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center p-4">
       <div className="w-full max-w-4xl">
-        {/* Header */}
         <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center space-x-2 text-2xl font-bold text-primary mb-2">
+          <Link
+            href="/"
+            className="inline-flex items-center space-x-2 text-2xl font-bold text-primary mb-2">
             <Package className="h-8 w-8" />
             <span>RentalPro</span>
           </Link>
-          <p className="text-muted-foreground">Create your account and start renting today</p>
+          <p className="text-muted-foreground">
+            Create your account and start renting today
+          </p>
         </div>
 
         <div className="grid md:grid-cols-2 gap-8">
-          {/* Benefits Card */}
           <Card className="shadow-lg">
             <CardHeader>
               <CardTitle className="text-2xl">Why Join RentalPro?</CardTitle>
-              <CardDescription>Join thousands of satisfied customers and unlock these amazing benefits</CardDescription>
+              <CardDescription>
+                Join thousands of satisfied customers and unlock these amazing
+                benefits
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {benefits.map((benefit, index) => (
@@ -123,31 +148,40 @@ export default function SignupPage() {
               ))}
 
               <div className="mt-6 p-4 bg-primary/10 rounded-lg">
-                <h4 className="font-semibold text-primary mb-2">🎉 Special Offer</h4>
+                <h4 className="font-semibold text-primary mb-2">
+                  🎉 Special Offer
+                </h4>
                 <p className="text-sm text-muted-foreground">
-                  Sign up now and get <strong>10% off</strong> your first rental! Plus, earn loyalty points with every
-                  booking.
+                  Sign up now and get <strong>10% off</strong> your first
+                  rental! Plus, earn loyalty points with every booking.
                 </p>
               </div>
 
               <div className="mt-6">
                 <h4 className="font-semibold mb-3">Popular Categories</h4>
                 <div className="grid grid-cols-2 gap-2">
-                  {["Electronics", "Sports", "Tools", "Events"].map((category) => (
-                    <div key={category} className="text-center p-2 bg-muted rounded">
-                      <div className="text-sm font-medium">{category}</div>
-                    </div>
-                  ))}
+                  {["Electronics", "Sports", "Tools", "Events"].map(
+                    (category) => (
+                      <div
+                        key={category}
+                        className="text-center p-2 bg-muted rounded">
+                        <div className="text-sm font-medium">{category}</div>
+                      </div>
+                    )
+                  )}
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Signup Form */}
           <Card className="shadow-lg">
             <CardHeader className="space-y-1">
-              <CardTitle className="text-2xl font-bold">Create Account</CardTitle>
-              <CardDescription>Fill in your details to get started</CardDescription>
+              <CardTitle className="text-2xl font-bold">
+                Create Account
+              </CardTitle>
+              <CardDescription>
+                Fill in your details to get started
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -161,7 +195,9 @@ export default function SignupPage() {
                         type="text"
                         placeholder="Enter your full name"
                         value={formData.name}
-                        onChange={(e) => handleInputChange("name", e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("name", e.target.value)
+                        }
                         className="pl-10"
                         required
                         disabled={loading}
@@ -178,7 +214,9 @@ export default function SignupPage() {
                         type="tel"
                         placeholder="+91 9876543210"
                         value={formData.phone}
-                        onChange={(e) => handleInputChange("phone", e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("phone", e.target.value)
+                        }
                         className="pl-10"
                         disabled={loading}
                       />
@@ -195,7 +233,9 @@ export default function SignupPage() {
                       type="email"
                       placeholder="Enter your email"
                       value={formData.email}
-                      onChange={(e) => handleInputChange("email", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("email", e.target.value)
+                      }
                       className="pl-10"
                       required
                       disabled={loading}
@@ -207,9 +247,10 @@ export default function SignupPage() {
                   <Label htmlFor="role">Account Type</Label>
                   <Select
                     value={formData.role}
-                    onValueChange={(value: "customer" | "staff") => handleInputChange("role", value)}
-                    disabled={loading}
-                  >
+                    onValueChange={(value: "customer" | "staff") =>
+                      handleInputChange("role", value)
+                    }
+                    disabled={loading}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select account type" />
                     </SelectTrigger>
@@ -217,13 +258,17 @@ export default function SignupPage() {
                       <SelectItem value="customer">
                         <div className="flex flex-col items-start">
                           <span>Customer</span>
-                          <span className="text-xs text-muted-foreground">Browse and rent products</span>
+                          <span className="text-xs text-muted-foreground">
+                            Browse and rent products
+                          </span>
                         </div>
                       </SelectItem>
                       <SelectItem value="staff">
                         <div className="flex flex-col items-start">
                           <span>Staff</span>
-                          <span className="text-xs text-muted-foreground">Manage rentals and inventory</span>
+                          <span className="text-xs text-muted-foreground">
+                            Manage rentals and inventory
+                          </span>
                         </div>
                       </SelectItem>
                     </SelectContent>
@@ -240,7 +285,9 @@ export default function SignupPage() {
                         type={showPassword ? "text" : "password"}
                         placeholder="Create password"
                         value={formData.password}
-                        onChange={(e) => handleInputChange("password", e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("password", e.target.value)
+                        }
                         className="pl-10 pr-10"
                         required
                         disabled={loading}
@@ -251,9 +298,12 @@ export default function SignupPage() {
                         size="sm"
                         className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0"
                         onClick={() => setShowPassword(!showPassword)}
-                        disabled={loading}
-                      >
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        disabled={loading}>
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
                       </Button>
                     </div>
                   </div>
@@ -267,7 +317,9 @@ export default function SignupPage() {
                         type={showConfirmPassword ? "text" : "password"}
                         placeholder="Confirm password"
                         value={formData.confirmPassword}
-                        onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("confirmPassword", e.target.value)
+                        }
                         className="pl-10 pr-10"
                         required
                         disabled={loading}
@@ -277,24 +329,39 @@ export default function SignupPage() {
                         variant="ghost"
                         size="sm"
                         className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0"
-                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        disabled={loading}
-                      >
-                        {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        onClick={() =>
+                          setShowConfirmPassword(!showConfirmPassword)
+                        }
+                        disabled={loading}>
+                        {showConfirmPassword ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
                       </Button>
                     </div>
                   </div>
                 </div>
 
                 <div className="flex items-center space-x-2">
-                  <Checkbox id="terms" checked={acceptTerms} onCheckedChange={setAcceptTerms} disabled={loading} />
+                  <Checkbox
+                    id="terms"
+                    checked={acceptTerms}
+                    //@ts-ignore
+                    onCheckedChange={setAcceptTerms}
+                    disabled={loading}
+                  />
                   <Label htmlFor="terms" className="text-sm">
                     I agree to the{" "}
-                    <Link href="/terms" className="text-primary hover:underline">
+                    <Link
+                      href="/terms"
+                      className="text-primary hover:underline">
                       Terms of Service
                     </Link>{" "}
                     and{" "}
-                    <Link href="/privacy" className="text-primary hover:underline">
+                    <Link
+                      href="/privacy"
+                      className="text-primary hover:underline">
                       Privacy Policy
                     </Link>
                   </Label>
@@ -306,7 +373,10 @@ export default function SignupPage() {
                   </Alert>
                 )}
 
-                <Button type="submit" className="w-full" disabled={loading || !acceptTerms}>
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={loading || !acceptTerms}>
                   {loading ? "Creating Account..." : "Create Account"}
                 </Button>
               </form>
@@ -316,7 +386,9 @@ export default function SignupPage() {
                   <Separator className="w-full" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-muted-foreground">Or sign up with</span>
+                  <span className="bg-background px-2 text-muted-foreground">
+                    Or sign up with
+                  </span>
                 </div>
               </div>
 
@@ -343,7 +415,10 @@ export default function SignupPage() {
                   Google
                 </Button>
                 <Button variant="outline" disabled={loading}>
-                  <svg className="mr-2 h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                  <svg
+                    className="mr-2 h-4 w-4"
+                    fill="currentColor"
+                    viewBox="0 0 20 20">
                     <path
                       fillRule="evenodd"
                       d="M10 0C4.477 0 0 4.484 0 10.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0110 4.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.203 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.942.359.31.678.921.678 1.856 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0020 10.017C20 4.484 15.522 0 10 0z"
@@ -357,7 +432,9 @@ export default function SignupPage() {
               <div className="text-center">
                 <span className="text-sm text-muted-foreground">
                   Already have an account?{" "}
-                  <Link href="/auth/login" className="text-primary hover:underline font-medium">
+                  <Link
+                    href="/auth/login"
+                    className="text-primary hover:underline font-medium">
                     Sign in
                   </Link>
                 </span>
@@ -366,14 +443,15 @@ export default function SignupPage() {
           </Card>
         </div>
 
-        {/* Back to Home */}
         <div className="text-center mt-6">
-          <Link href="/" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground">
+          <Link
+            href="/"
+            className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Home
           </Link>
         </div>
       </div>
     </div>
-  )
+  );
 }

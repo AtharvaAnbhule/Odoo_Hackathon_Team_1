@@ -81,8 +81,8 @@ export function BookingFlow({
       differenceInDays(bookingData.endDate, bookingData.startDate)
     );
     const baseAmount = product.basePrice * bookingData.quantity * days;
-    const discountAmount = baseAmount * 0.1; // 10% discount for demo
-    const taxAmount = (baseAmount - discountAmount) * 0.09; // 9% tax
+    const discountAmount = baseAmount * 0.1;
+    const taxAmount = (baseAmount - discountAmount) * 0.09;
     const totalPrice = baseAmount - discountAmount + taxAmount;
     const securityDeposit = product.basePrice * bookingData.quantity * 0.5;
 
@@ -107,7 +107,6 @@ export function BookingFlow({
     setBookingData((prev) => {
       const newData = { ...prev, [field]: date };
 
-      // Ensure end date is after start date
       if (field === "startDate" && date >= prev.endDate) {
         newData.endDate = addDays(date, 1);
       }
@@ -201,7 +200,6 @@ export function BookingFlow({
       setShowPayment(false);
       onOpenChange(false);
 
-      // Reset form
       setStep(1);
       setCreatedBooking(null);
     }
@@ -220,7 +218,6 @@ export function BookingFlow({
       <div>
         <h3 className="text-lg font-semibold mb-4">Select Dates & Quantity</h3>
 
-        {/* Date Selection */}
         <div className="grid md:grid-cols-2 gap-4 mb-6">
           <div className="space-y-2">
             <Label>Pickup Date</Label>
@@ -279,7 +276,6 @@ export function BookingFlow({
           </div>
         </div>
 
-        {/* Quantity Selection */}
         <div className="space-y-2 mb-6">
           <Label>Quantity</Label>
           <div className="flex items-center space-x-4">
@@ -306,7 +302,6 @@ export function BookingFlow({
           </div>
         </div>
 
-        {/* Additional Notes */}
         <div className="space-y-2">
           <Label htmlFor="notes">Special Requirements (Optional)</Label>
           <Textarea
@@ -321,7 +316,6 @@ export function BookingFlow({
         </div>
       </div>
 
-      {/* Pricing Summary */}
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">Pricing Summary</CardTitle>
@@ -428,7 +422,6 @@ export function BookingFlow({
         </div>
       </div>
 
-      {/* Pickup/Return Locations */}
       <div>
         <h4 className="font-semibold mb-3">Pickup & Return</h4>
         <div className="grid md:grid-cols-2 gap-4">
@@ -477,7 +470,6 @@ export function BookingFlow({
       <div>
         <h3 className="text-lg font-semibold mb-4">Review Your Booking</h3>
 
-        {/* Product Summary */}
         <Card className="mb-6">
           <CardContent className="p-4">
             <div className="flex items-start space-x-4">
@@ -505,7 +497,6 @@ export function BookingFlow({
           </CardContent>
         </Card>
 
-        {/* Customer Details */}
         <Card className="mb-6">
           <CardHeader>
             <CardTitle className="text-base">Contact Details</CardTitle>
@@ -526,7 +517,6 @@ export function BookingFlow({
           </CardContent>
         </Card>
 
-        {/* Final Pricing */}
         <Card>
           <CardHeader>
             <CardTitle className="text-base">Payment Summary</CardTitle>
@@ -574,7 +564,6 @@ export function BookingFlow({
             </DialogDescription>
           </DialogHeader>
 
-          {/* Progress Indicator */}
           <div className="flex items-center justify-between mb-6">
             {[1, 2, 3].map((stepNumber) => (
               <div key={stepNumber} className="flex items-center">
@@ -609,7 +598,6 @@ export function BookingFlow({
             {step === 3 && renderStep3()}
           </div>
 
-          {/* Navigation Buttons */}
           <div className="flex justify-between pt-6 border-t">
             <Button
               variant="outline"
@@ -635,7 +623,6 @@ export function BookingFlow({
         </DialogContent>
       </Dialog>
 
-      {/* Payment Modal */}
       {createdBooking && (
         <PaymentModal
           open={showPayment}

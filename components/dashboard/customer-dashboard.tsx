@@ -149,10 +149,6 @@ export function CustomerDashboard() {
               <Plus className="h-4 w-4 mr-2" />
               AI Suggestion
             </Button>
-            <Button onClick={() => router.push("/ai-speaker")}>
-              <Plus className="h-4 w-4 mr-2" />
-              AI Speaker
-            </Button>
           </div>
         </CardContent>
       </Card>

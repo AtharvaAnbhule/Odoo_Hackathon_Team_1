@@ -78,11 +78,8 @@ interface VoiceSettings {
 }
 
 export default function AdvancedChatbot() {
-  // Configuration
-  const COHERE_API_KEY = "YOUR_COHERE_API_KEY";
   const COHERE_MODEL = "command";
 
-  // State
   const [isOpen, setIsOpen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -108,7 +105,6 @@ export default function AdvancedChatbot() {
   >([]);
   const [conversationContext, setConversationContext] = useState("");
 
-  // Refs
   const recognitionRef = useRef<any>(null);
   const synthRef = useRef<SpeechSynthesis | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -140,7 +136,6 @@ export default function AdvancedChatbot() {
         synthRef.current.onvoiceschanged = loadVoices;
       }
 
-      // Initialize speech recognition
       const SpeechRecognition =
         window.SpeechRecognition || window.webkitSpeechRecognition;
       if (SpeechRecognition) {
@@ -193,7 +188,6 @@ export default function AdvancedChatbot() {
     };
   }, [transcript, voiceSettings.language]);
 
-  // Audio visualization for voice input
   const startAudioVisualization = useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -230,7 +224,6 @@ export default function AdvancedChatbot() {
     setAudioLevel(0);
   }, []);
 
-  // Voice control functions
   const startListening = () => {
     if (recognitionRef.current && !isListening) {
       setTranscript("");
@@ -246,7 +239,6 @@ export default function AdvancedChatbot() {
     }
   };
 
-  // Core chat functionality
   const handleSendMessage = async (message: string) => {
     if (!message.trim()) return;
 
@@ -263,7 +255,6 @@ export default function AdvancedChatbot() {
     setIsProcessing(true);
     setIsTyping(true);
 
-    // Add typing indicator
     const typingMessage: Message = {
       id: "typing",
       type: "assistant",
@@ -274,7 +265,6 @@ export default function AdvancedChatbot() {
     setMessages((prev) => [...prev, typingMessage]);
 
     try {
-      // Call Cohere API
       const response = await fetch("https://api.cohere.ai/v1/chat", {
         method: "POST",
         headers: {
@@ -303,10 +293,8 @@ export default function AdvancedChatbot() {
       const data = await response.json();
       const processingTime = Date.now() - startTime;
 
-      // Remove typing indicator
       setMessages((prev) => prev.filter((msg) => msg.id !== "typing"));
 
-      // Create AI message
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
         type: "assistant",
@@ -322,7 +310,6 @@ export default function AdvancedChatbot() {
 
       setMessages((prev) => [...prev, aiMessage]);
 
-      // Typing animation
       let currentText = "";
       const fullText =
         data.text || "I couldn't process that request. Please try again.";
@@ -338,7 +325,6 @@ export default function AdvancedChatbot() {
         );
       }
 
-      // Speak the response
       if (synthRef.current && fullText) {
         setTimeout(() => speakText(fullText), 500);
       }
@@ -361,7 +347,6 @@ export default function AdvancedChatbot() {
     }
   };
 
-  // Generate contextual suggestions
   const generateSuggestions = (userMessage: string): string[] => {
     const lowerMessage = userMessage.toLowerCase();
     const suggestions = new Set<string>();
@@ -391,7 +376,6 @@ export default function AdvancedChatbot() {
     return Array.from(suggestions);
   };
 
-  // Speech synthesis functions
   const speakText = (text: string) => {
     if (synthRef.current) {
       synthRef.current.cancel();
@@ -425,7 +409,6 @@ export default function AdvancedChatbot() {
     }
   };
 
-  // Helper functions
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -517,7 +500,6 @@ export default function AdvancedChatbot() {
         </div>
       )}
 
-      {/* Advanced Chat Panel */}
       {isOpen && (
         <Card
           className={`${chatPanelClass} shadow-2xl z-50 flex flex-col ${
