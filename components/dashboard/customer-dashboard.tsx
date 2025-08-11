@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -28,7 +28,6 @@ import {
   Bell,
   User,
 } from "lucide-react";
-import { DUMMY_BOOKINGS, DUMMY_PRODUCTS } from "@/lib/data";
 import { ProductCatalog } from "@/components/products/product-catalog";
 import { BookingFlow } from "@/components/booking/booking-flow";
 import { CalendarView } from "@/components/calendar/calendar-view";
@@ -45,6 +44,7 @@ import { useAuth } from "@/contexts/auth-context";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import type { Product, Booking } from "@/lib/types";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function CustomerDashboard() {
   const { user } = useAuth();
@@ -57,16 +57,49 @@ export function CustomerDashboard() {
   const [showProfile, setShowProfile] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [showBooking, setShowBooking] = useState(false);
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const userBookings = DUMMY_BOOKINGS.filter(
-    (booking) => booking.customerId === user?.id || booking.customerId === "2"
-  );
-  const upcomingBookings = userBookings.filter(
+  // Fetch bookings from API
+  useEffect(() => {
+    const fetchBookings = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch("http://localhost:5000/api/bookings");
+        if (!response.ok) {
+          throw new Error("Failed to fetch bookings");
+        }
+        const data = await response.json();
+        // Filter bookings for the current user
+        const userBookings = data.bookings.filter(
+          (booking: Booking) =>
+            booking.customerId === user?.id ||
+            booking.customerEmail === user?.email
+        );
+        setBookings(userBookings);
+      } catch (error) {
+        console.error("Error fetching bookings:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load bookings",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (user) {
+      fetchBookings();
+    }
+  }, [user, toast]);
+
+  const upcomingBookings = bookings.filter(
     (booking) =>
       booking.status === "confirmed" || booking.status === "picked-up"
   );
-  const totalSpent = userBookings.reduce(
-    (sum, booking) => sum + booking.totalPrice,
+  const totalSpent = bookings.reduce(
+    (sum, booking) => sum + (booking.totalPrice || 0),
     0
   );
 
@@ -75,12 +108,16 @@ export function CustomerDashboard() {
   };
 
   const handleBookProduct = (productId: string) => {
-    const product = DUMMY_PRODUCTS.find((p) => p.id === productId);
-    if (product) {
-      setSelectedProduct(product);
-      setShowBooking(true);
-      setShowProductCatalog(false);
-    }
+    // In a real app, you would fetch the product details from your API
+    const product = {
+      id: productId,
+      name: "Example Product",
+      basePrice: 100,
+      // Add other product properties as needed
+    } as Product;
+    setSelectedProduct(product);
+    setShowBooking(true);
+    setShowProductCatalog(false);
   };
 
   const handleBookingComplete = (booking: Booking) => {
@@ -90,7 +127,11 @@ export function CustomerDashboard() {
     });
     setShowBooking(false);
     setSelectedProduct(null);
-    router.push(`/customer/booking-success?bookingId=${booking.id}`);
+    // Add the new booking to the state
+    setBookings((prev) => [booking, ...prev]);
+    router.push(
+      `/customer/booking-success?bookingId=${booking.id || booking.id}`
+    );
   };
 
   const getStatusColor = (status: string) => {
@@ -103,6 +144,8 @@ export function CustomerDashboard() {
         return "bg-green-100 text-green-800";
       case "overdue":
         return "bg-red-100 text-red-800";
+      case "pending":
+        return "bg-yellow-100 text-yellow-800";
       default:
         return "bg-gray-100 text-gray-800";
     }
@@ -126,7 +169,7 @@ export function CustomerDashboard() {
       <Card className="bg-gradient-to-r from-blue-500 to-purple-600 text-white">
         <CardHeader>
           <CardTitle className="text-2xl">
-            Welcome back, {user?.name || "John"}!
+            Welcome back, {user?.name || "Customer"}!
           </CardTitle>
           <CardDescription className="text-blue-100">
             Manage your rentals and discover new products
@@ -162,7 +205,13 @@ export function CustomerDashboard() {
             <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{upcomingBookings.length}</div>
+            <div className="text-2xl font-bold">
+              {loading ? (
+                <Skeleton className="h-8 w-8" />
+              ) : (
+                upcomingBookings.length
+              )}
+            </div>
             <p className="text-xs text-muted-foreground">Currently renting</p>
           </CardContent>
         </Card>
@@ -175,7 +224,9 @@ export function CustomerDashboard() {
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{userBookings.length}</div>
+            <div className="text-2xl font-bold">
+              {loading ? <Skeleton className="h-8 w-8" /> : bookings.length}
+            </div>
             <p className="text-xs text-muted-foreground">All time bookings</p>
           </CardContent>
         </Card>
@@ -187,7 +238,11 @@ export function CustomerDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              ₹{totalSpent.toLocaleString()}
+              {loading ? (
+                <Skeleton className="h-8 w-20" />
+              ) : (
+                `₹${totalSpent.toLocaleString()}`
+              )}
             </div>
             <p className="text-xs text-muted-foreground">This year</p>
           </CardContent>
@@ -201,7 +256,9 @@ export function CustomerDashboard() {
             <Star className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">1,250</div>
+            <div className="text-2xl font-bold">
+              {loading ? <Skeleton className="h-8 w-8" /> : "1,250"}
+            </div>
             <p className="text-xs text-muted-foreground">₹125 credit value</p>
           </CardContent>
         </Card>
@@ -235,11 +292,17 @@ export function CustomerDashboard() {
           </div>
         </CardHeader>
         <CardContent>
-          {upcomingBookings.length > 0 ? (
+          {loading ? (
+            <div className="space-y-4">
+              {[...Array(3)].map((_, i) => (
+                <Skeleton key={i} className="h-20 w-full" />
+              ))}
+            </div>
+          ) : upcomingBookings.length > 0 ? (
             <div className="space-y-4">
               {upcomingBookings.map((booking) => (
                 <div
-                  key={booking.id}
+                  key={booking.id || booking.id}
                   className="flex items-center justify-between p-4 border rounded-lg">
                   <div className="flex items-center space-x-4">
                     <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center">
@@ -296,53 +359,66 @@ export function CustomerDashboard() {
           <CardDescription>Your past rental activities</CardDescription>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Product</TableHead>
-                <TableHead>Duration</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Payment</TableHead>
-                <TableHead className="text-right">Amount</TableHead>
-                <TableHead className="text-right">Action</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {userBookings.map((booking) => (
-                <TableRow key={booking.id}>
-                  <TableCell className="font-medium">
-                    {booking.productName}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                      <Calendar className="h-3 w-3" />
-                      {new Date(booking.startDate).toLocaleDateString()} -{" "}
-                      {new Date(booking.endDate).toLocaleDateString()}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge className={getStatusColor(booking.status)}>
-                      {booking.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      className={getPaymentStatusColor(booking.paymentStatus)}>
-                      {booking.paymentStatus}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    ₹{booking.totalPrice}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button size="sm" variant="outline">
-                      View
-                    </Button>
-                  </TableCell>
-                </TableRow>
+          {loading ? (
+            <div className="space-y-4">
+              <Skeleton className="h-12 w-full" />
+              {[...Array(5)].map((_, i) => (
+                <Skeleton key={i} className="h-16 w-full" />
               ))}
-            </TableBody>
-          </Table>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Product</TableHead>
+                  <TableHead>Duration</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Payment</TableHead>
+                  <TableHead className="text-right">Amount</TableHead>
+                  <TableHead className="text-right">Action</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {bookings.map((booking) => (
+                  <TableRow key={booking.id || booking.id}>
+                    <TableCell className="font-medium">
+                      {booking.productName}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                        <Calendar className="h-3 w-3" />
+                        {new Date(
+                          booking.startDate
+                        ).toLocaleDateString()} -{" "}
+                        {new Date(booking.endDate).toLocaleDateString()}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge className={getStatusColor(booking.status)}>
+                        {booking.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        className={getPaymentStatusColor(
+                          booking.paymentStatus
+                        )}>
+                        {booking.paymentStatus}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      ₹{booking.totalPrice}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button size="sm" variant="outline">
+                        View
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
 
@@ -364,10 +440,6 @@ export function CustomerDashboard() {
               <Calendar className="h-6 w-6 mb-2" />
               View Calendar
             </Button>
-            <Button variant="outline" className="h-20 flex-col bg-transparent">
-              <CreditCard className="h-6 w-6 mb-2" />
-              Payment History
-            </Button>
           </div>
         </CardContent>
       </Card>
@@ -383,14 +455,14 @@ export function CustomerDashboard() {
       </Dialog>
 
       <Dialog open={showCalendar} onOpenChange={setShowCalendar}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-8xl w-900 max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Booking Calendar</DialogTitle>
             <DialogDescription>
               View your bookings and available dates
             </DialogDescription>
           </DialogHeader>
-          <CalendarView bookings={userBookings} />
+          <CalendarView bookings={bookings} />
         </DialogContent>
       </Dialog>
 
@@ -402,7 +474,7 @@ export function CustomerDashboard() {
               Your recent notifications and updates
             </DialogDescription>
           </DialogHeader>
-          <NotificationPanel userId={user?.id || "2"} />
+          <NotificationPanel userId={user?.id || "guest"} />
         </DialogContent>
       </Dialog>
 

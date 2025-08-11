@@ -58,7 +58,7 @@ export function CalendarView({ bookings }: CalendarViewProps) {
 
   return (
     <div className="space-y-6">
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className="grid md:grid-cols-1 gap-6">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
