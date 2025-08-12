@@ -75,7 +75,6 @@ export function ReportsDashboard({ bookings }: ReportsDashboardProps) {
   const [products, setProducts] = useState<Product[]>([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
 
-  // Fetch products from API
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -101,7 +100,6 @@ export function ReportsDashboard({ bookings }: ReportsDashboardProps) {
     fetchProducts();
   }, []);
 
-  // Filter data based on date range
   const filteredBookings = bookings.filter((booking) => {
     const bookingDate = new Date(booking.createdAt);
     return (
@@ -110,7 +108,6 @@ export function ReportsDashboard({ bookings }: ReportsDashboardProps) {
     );
   });
 
-  // Calculate metrics
   const totalRevenue = filteredBookings.reduce(
     (sum, booking) => sum + (booking.totalPrice || 0),
     0
@@ -122,7 +119,6 @@ export function ReportsDashboard({ bookings }: ReportsDashboardProps) {
   const averageBookingValue =
     totalBookings > 0 ? totalRevenue / totalBookings : 0;
 
-  // Generate revenue data by month
   const revenueData = filteredBookings.reduce((acc, booking) => {
     const month = new Date(booking.createdAt).toLocaleString("default", {
       month: "short",
@@ -143,7 +139,6 @@ export function ReportsDashboard({ bookings }: ReportsDashboardProps) {
     })
   );
 
-  // Generate category distribution data
   const categoryData = products.reduce((acc, product) => {
     const category = product.tags?.[0] || "Uncategorized";
     if (!acc[category]) {
@@ -161,7 +156,6 @@ export function ReportsDashboard({ bookings }: ReportsDashboardProps) {
     })
   );
 
-  // Top performing products
   const topProducts = [...products]
     .sort((a, b) => (b.popularity || 0) - (a.popularity || 0))
     .slice(0, 5)
@@ -174,7 +168,6 @@ export function ReportsDashboard({ bookings }: ReportsDashboardProps) {
       category: product.tags?.[0] || "Uncategorized",
     }));
 
-  // Booking status overview
   const bookingStatusData = filteredBookings.reduce((acc, booking) => {
     if (!acc[booking.status]) {
       acc[booking.status] = 0;
