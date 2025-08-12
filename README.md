@@ -6,6 +6,8 @@ An AI-driven rental platform with an integrated voice assistant, built for the *
 
 
 
+DEMO Video Link -: https://drive.google.com/file/d/1U1uTu7RbiDBqqEn7ZIzV8qWFkuKEfNsl/view?usp=drivesdk
+
 
 ---
 
