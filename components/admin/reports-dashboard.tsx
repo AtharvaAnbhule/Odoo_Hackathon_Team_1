@@ -192,7 +192,6 @@ export function ReportsDashboard({ bookings }: ReportsDashboardProps) {
     pending: "bg-yellow-100 text-yellow-800",
   };
 
-  // Handle PDF export
   const handleExportPDF = useReactToPrint({
     content: () => reportRef.current,
     pageStyle: `
@@ -216,7 +215,6 @@ export function ReportsDashboard({ bookings }: ReportsDashboardProps) {
     documentTitle: `RentEase_Report_${format(new Date(), "yyyyMMdd")}`,
   });
 
-  // Handle CSV export
   const handleExportCSV = (type: string) => {
     let csvContent = "";
     let filename = "";
@@ -255,7 +253,7 @@ export function ReportsDashboard({ bookings }: ReportsDashboardProps) {
           "Booking ID,Customer,Product,Date,Status,Amount",
           ...filteredBookings.map(
             (booking) =>
-              `${booking._id?.toString().substring(0, 8) || "N/A"},${
+              `${booking.id?.toString().substring(0, 8) || "N/A"},${
                 booking.customerName || "N/A"
               },${booking.productName || "N/A"},${format(
                 new Date(booking.createdAt),
@@ -517,7 +515,7 @@ export function ReportsDashboard({ bookings }: ReportsDashboardProps) {
                     cy="50%"
                     labelLine={false}
                     label={({ name, percent }) =>
-                      `${name} ${(percent * 100).toFixed(0)}%`
+                      `${name} ${(percent! * 100).toFixed(0)}%`
                     }
                     outerRadius={80}
                     fill="#8884d8"

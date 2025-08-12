@@ -5,7 +5,6 @@ import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import type { Booking } from "@/lib/types";
 
-// Fix for default marker icons in Leaflet
 const DefaultIcon = L.icon({
   iconUrl: "/marker-icon.png",
   iconRetinaUrl: "/marker-icon-2x.png",
@@ -24,7 +23,6 @@ export default function MapComponent({
   pickups: Booking[];
   pendingReturns: Booking[];
 }) {
-  // Default coordinates (center the map on a specific location)
   const defaultPosition = [51.505, -0.09] as [number, number];
 
   return (

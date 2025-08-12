@@ -1,54 +1,60 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Mail, Package, ArrowLeft, CheckCircle } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
+import { useState } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Mail, Package, ArrowLeft, CheckCircle } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 export default function ForgotPasswordPage() {
-  const [email, setEmail] = useState("")
-  const [loading, setLoading] = useState(false)
-  const [sent, setSent] = useState(false)
-  const [error, setError] = useState("")
-  const { toast } = useToast()
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [error, setError] = useState("");
+  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError("")
-    setLoading(true)
+    e.preventDefault();
+    setError("");
+    setLoading(true);
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 2000))
+    await new Promise((resolve) => setTimeout(resolve, 2000));
 
     if (!email) {
-      setError("Please enter your email address")
-      setLoading(false)
-      return
+      setError("Please enter your email address");
+      setLoading(false);
+      return;
     }
 
-    // In a real app, this would send a password reset email
-    setSent(true)
-    setLoading(false)
+    setSent(true);
+    setLoading(false);
 
     toast({
       title: "Reset Link Sent",
       description: "Check your email for password reset instructions",
-    })
-  }
+    });
+  };
 
   if (sent) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
-            <Link href="/" className="inline-flex items-center space-x-2 text-2xl font-bold text-primary mb-2">
+            <Link
+              href="/"
+              className="inline-flex items-center space-x-2 text-2xl font-bold text-primary mb-2">
               <Package className="h-8 w-8" />
               <span>RentalPro</span>
             </Link>
@@ -60,12 +66,17 @@ export default function ForgotPasswordPage() {
                 <CheckCircle className="h-8 w-8 text-green-600" />
               </div>
               <CardTitle className="text-2xl">Check Your Email</CardTitle>
-              <CardDescription>We've sent password reset instructions to {email}</CardDescription>
+              <CardDescription>
+                We've sent password reset instructions to {email}
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="text-sm text-muted-foreground">
                 <p>Didn't receive the email? Check your spam folder or</p>
-                <Button variant="link" className="p-0 h-auto" onClick={() => setSent(false)}>
+                <Button
+                  variant="link"
+                  className="p-0 h-auto"
+                  onClick={() => setSent(false)}>
                   try again
                 </Button>
               </div>
@@ -85,14 +96,16 @@ export default function ForgotPasswordPage() {
           </Card>
         </div>
       </div>
-    )
+    );
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center space-x-2 text-2xl font-bold text-primary mb-2">
+          <Link
+            href="/"
+            className="inline-flex items-center space-x-2 text-2xl font-bold text-primary mb-2">
             <Package className="h-8 w-8" />
             <span>RentalPro</span>
           </Link>
@@ -101,9 +114,12 @@ export default function ForgotPasswordPage() {
 
         <Card className="shadow-lg">
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold text-center">Forgot Password?</CardTitle>
+            <CardTitle className="text-2xl font-bold text-center">
+              Forgot Password?
+            </CardTitle>
             <CardDescription className="text-center">
-              Enter your email address and we'll send you a link to reset your password
+              Enter your email address and we'll send you a link to reset your
+              password
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -139,7 +155,9 @@ export default function ForgotPasswordPage() {
             <div className="text-center mt-6">
               <span className="text-sm text-muted-foreground">
                 Remember your password?{" "}
-                <Link href="/auth/login" className="text-primary hover:underline font-medium">
+                <Link
+                  href="/auth/login"
+                  className="text-primary hover:underline font-medium">
                   Sign in
                 </Link>
               </span>
@@ -148,12 +166,14 @@ export default function ForgotPasswordPage() {
         </Card>
 
         <div className="text-center mt-6">
-          <Link href="/" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground">
+          <Link
+            href="/"
+            className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Home
           </Link>
         </div>
       </div>
     </div>
-  )
+  );
 }

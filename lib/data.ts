@@ -1,6 +1,6 @@
 import type { User, Product, Booking, Category, Notification, PriceRule, InventoryItem } from "./types"
 
-// Change the dummy password to something secure that won't trigger breach warnings
+
 export const DUMMY_PASSWORD = "RentalPro@2024#Secure"
 
 export const DUMMY_USERS: User[] = [
@@ -528,7 +528,7 @@ export const DUMMY_INVENTORY: InventoryItem[] = [
   },
 ]
 
-// Add payment-related data structures
+
 export interface PaymentMethod {
   id: string
   name: string

@@ -64,7 +64,6 @@ export function AdminDashboard() {
   const [categoryDescription, setCategoryDescription] = useState("");
   const [categoryImage, setCategoryImage] = useState("");
 
-  // Fetch bookings from MongoDB
   useEffect(() => {
     const fetchBookings = async () => {
       try {
@@ -90,7 +89,6 @@ export function AdminDashboard() {
     fetchBookings();
   }, []);
 
-  // Fetch products
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -116,7 +114,6 @@ export function AdminDashboard() {
     fetchProducts();
   }, []);
 
-  // Fetch users
   useEffect(() => {
     const fetchUsers = async () => {
       try {

@@ -67,7 +67,6 @@ export function CustomerDashboard() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch bookings from API
   useEffect(() => {
     const fetchBookings = async () => {
       try {
@@ -77,7 +76,7 @@ export function CustomerDashboard() {
           throw new Error("Failed to fetch bookings");
         }
         const data = await response.json();
-        // Filter bookings for the current user
+
         const userBookings = data.bookings.filter(
           (booking: Booking) =>
             booking.customerId === user?.id ||
@@ -143,12 +142,10 @@ export function CustomerDashboard() {
     setShowInvoice(true);
   };
 
-  // In your handleDownloadInvoice and handlePrintInvoice functions
   const handleDownloadInvoice = async () => {
     if (!invoiceRef.current) return;
 
     try {
-      // Temporarily replace oklch colors with standard colors
       const originalStyles = Array.from(document.querySelectorAll("style")).map(
         (style) => style.innerHTML
       );
@@ -156,11 +153,10 @@ export function CustomerDashboard() {
         style.innerHTML = style.innerHTML.replace(
           /oklch\([^)]*\)/g,
           (match) => {
-            // Replace oklch with rgb or hex equivalents
             if (match.includes("purple")) return "rgb(168, 85, 247)";
             if (match.includes("blue")) return "rgb(59, 130, 246)";
-            // Add more replacements as needed
-            return "rgb(0, 0, 0)"; // default fallback
+
+            return "rgb(0, 0, 0)";
           }
         );
       });
@@ -171,7 +167,6 @@ export function CustomerDashboard() {
         useCORS: true,
       });
 
-      // Restore original styles
       document.querySelectorAll("style").forEach((style, index) => {
         style.innerHTML = originalStyles[index];
       });
@@ -267,7 +262,6 @@ export function CustomerDashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Dashboard Header */}
       <Card className="bg-gradient-to-r from-blue-500 to-purple-600 text-white">
         <CardHeader>
           <CardTitle className="text-2xl">
@@ -298,7 +292,6 @@ export function CustomerDashboard() {
         </CardContent>
       </Card>
 
-      {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -458,7 +451,6 @@ export function CustomerDashboard() {
         </CardContent>
       </Card>
 
-      {/* Booking History */}
       <Card>
         <CardHeader>
           <CardTitle>Booking History</CardTitle>
@@ -531,7 +523,6 @@ export function CustomerDashboard() {
         </CardContent>
       </Card>
 
-      {/* Quick Actions */}
       <Card>
         <CardHeader>
           <CardTitle>Quick Actions</CardTitle>
@@ -564,7 +555,6 @@ export function CustomerDashboard() {
         </DialogContent>
       </Dialog>
 
-      {/* Calendar Dialog */}
       <Dialog open={showCalendar} onOpenChange={setShowCalendar}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -577,7 +567,6 @@ export function CustomerDashboard() {
         </DialogContent>
       </Dialog>
 
-      {/* Notifications Dialog */}
       <Dialog open={showNotifications} onOpenChange={setShowNotifications}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -590,7 +579,6 @@ export function CustomerDashboard() {
         </DialogContent>
       </Dialog>
 
-      {/* Profile Dialog */}
       <Dialog open={showProfile} onOpenChange={setShowProfile}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -603,7 +591,6 @@ export function CustomerDashboard() {
         </DialogContent>
       </Dialog>
 
-      {/* Invoice Dialog */}
       <Dialog open={showInvoice} onOpenChange={setShowInvoice}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>

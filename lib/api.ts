@@ -1,6 +1,6 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"
 
-// Helper function to get auth token
+
 const getAuthToken = () => {
   if (typeof window !== "undefined") {
     return localStorage.getItem("authToken")
@@ -8,7 +8,7 @@ const getAuthToken = () => {
   return null
 }
 
-// Helper function to make API requests
+
 const apiRequest = async (endpoint: string, options: RequestInit = {}) => {
   const token = getAuthToken()
 
@@ -31,7 +31,7 @@ const apiRequest = async (endpoint: string, options: RequestInit = {}) => {
   return response.json()
 }
 
-// Auth API
+
 export const authAPI = {
   register: (userData: {
     name: string
@@ -75,7 +75,7 @@ export const authAPI = {
   logout: () => apiRequest("/auth/logout", { method: "POST" }),
 }
 
-// Users API
+
 export const usersAPI = {
   getAll: (params?: {
     page?: number
@@ -120,7 +120,7 @@ export const usersAPI = {
   getStats: () => apiRequest("/users/admin/stats"),
 }
 
-// Products API
+
 export const productsAPI = {
   getAll: (params?: {
     page?: number
@@ -204,7 +204,7 @@ export const productsAPI = {
   getStats: () => apiRequest("/products/admin/stats"),
 }
 
-// Bookings API
+
 export const bookingsAPI = {
   getAll: (params?: {
     page?: number
@@ -265,7 +265,7 @@ export const bookingsAPI = {
   getStats: () => apiRequest("/bookings/admin/stats"),
 }
 
-// Categories API
+
 export const categoriesAPI = {
   getAll: (params?: {
     page?: number
@@ -308,7 +308,7 @@ export const categoriesAPI = {
   getTree: () => apiRequest("/categories/admin/tree"),
 }
 
-// Notifications API
+
 export const notificationsAPI = {
   getAll: (params?: {
     page?: number
@@ -347,7 +347,7 @@ export const notificationsAPI = {
     }),
 }
 
-// Helper functions for token management
+
 export const tokenManager = {
   setToken: (token: string) => {
     if (typeof window !== "undefined") {
@@ -378,12 +378,12 @@ export const tokenManager = {
   },
 }
 
-// Error handling helper
+
 export const handleAPIError = (error: any) => {
   console.error("API Error:", error)
 
   if (error.message.includes("401")) {
-    // Token expired or invalid
+
     tokenManager.removeToken()
     window.location.href = "/auth/login"
     return "Session expired. Please login again."

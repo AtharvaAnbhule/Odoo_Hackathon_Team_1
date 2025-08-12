@@ -14,7 +14,7 @@ export interface AuthState {
   isAuthenticated: boolean
 }
 
-// Dummy users for testing
+
 export const DUMMY_USERS: User[] = [
   {
     id: "1",
@@ -42,5 +42,5 @@ export const DUMMY_USERS: User[] = [
   },
 ]
 
-// Dummy password for all users: password123
+
 export const DUMMY_PASSWORD = "password123"

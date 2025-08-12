@@ -1,84 +1,88 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { createContext, useContext, useState, useEffect } from "react"
-import type { User } from "@/lib/types"
-import { authAPI, tokenManager, handleAPIError } from "@/lib/api"
+import type React from "react";
+import { createContext, useContext, useState, useEffect } from "react";
+import type { User } from "@/lib/types";
+import { authAPI, tokenManager, handleAPIError } from "@/lib/api";
 
 interface AuthContextType {
-  user: User | null
-  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>
-  signup: (userData: Partial<User> & { password: string }) => Promise<{ success: boolean; error?: string }>
-  logout: () => void
-  loading: boolean
+  user: User | null;
+  login: (
+    email: string,
+    password: string
+  ) => Promise<{ success: boolean; error?: string }>;
+  signup: (
+    userData: Partial<User> & { password: string }
+  ) => Promise<{ success: boolean; error?: string }>;
+  logout: () => void;
+  loading: boolean;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    checkAuth()
-  }, [])
+    checkAuth();
+  }, []);
 
   const checkAuth = async () => {
     try {
-      const token = tokenManager.getToken()
+      const token = tokenManager.getToken();
       if (!token || tokenManager.isTokenExpired(token)) {
-        tokenManager.removeToken()
-        setUser(null)
-        setLoading(false)
-        return
+        tokenManager.removeToken();
+        setUser(null);
+        setLoading(false);
+        return;
       }
 
-      const response = await authAPI.getMe()
-      setUser(response.user)
+      const response = await authAPI.getMe();
+      setUser(response.user);
     } catch (error) {
-      tokenManager.removeToken()
-      setUser(null)
+      tokenManager.removeToken();
+      setUser(null);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const login = async (email: string, password: string) => {
-    setLoading(true)
+    setLoading(true);
 
     try {
-      const response = await authAPI.login({ email, password })
+      const response = await authAPI.login({ email, password });
 
-      tokenManager.setToken(response.token)
-      setUser(response.user)
-      setLoading(false)
+      tokenManager.setToken(response.token);
+      setUser(response.user);
+      setLoading(false);
 
-      // Redirect based on user role
       setTimeout(() => {
         switch (response.user.role) {
           case "admin":
-            window.location.href = "/admin/dashboard"
-            break
+            window.location.href = "/admin/dashboard";
+            break;
           case "staff":
-            window.location.href = "/staff/dashboard"
-            break
+            window.location.href = "/staff/dashboard";
+            break;
           case "customer":
-            window.location.href = "/customer/dashboard"
-            break
+            window.location.href = "/customer/dashboard";
+            break;
           default:
-            window.location.href = "/dashboard"
+            window.location.href = "/dashboard";
         }
-      }, 100)
+      }, 100);
 
-      return { success: true }
+      return { success: true };
     } catch (error: any) {
-      setLoading(false)
-      return { success: false, error: handleAPIError(error) }
+      setLoading(false);
+      return { success: false, error: handleAPIError(error) };
     }
-  }
+  };
 
   const signup = async (userData: Partial<User> & { password: string }) => {
-    setLoading(true)
+    setLoading(true);
 
     try {
       const response = await authAPI.register({
@@ -88,36 +92,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         role: userData.role || "customer",
         phone: userData.phone,
         address: userData.address,
-      })
+      });
 
-      tokenManager.setToken(response.token)
-      setUser(response.user)
-      setLoading(false)
-      return { success: true }
+      tokenManager.setToken(response.token);
+      setUser(response.user);
+      setLoading(false);
+      return { success: true };
     } catch (error: any) {
-      setLoading(false)
-      return { success: false, error: handleAPIError(error) }
+      setLoading(false);
+      return { success: false, error: handleAPIError(error) };
     }
-  }
+  };
 
   const logout = async () => {
     try {
-      await authAPI.logout()
+      await authAPI.logout();
     } catch (error) {
-      console.error("Logout error:", error)
+      console.error("Logout error:", error);
     } finally {
-      tokenManager.removeToken()
-      setUser(null)
+      tokenManager.removeToken();
+      setUser(null);
     }
-  }
+  };
 
-  return <AuthContext.Provider value={{ user, login, signup, logout, loading }}>{children}</AuthContext.Provider>
+  return (
+    <AuthContext.Provider value={{ user, login, signup, logout, loading }}>
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
 export function useAuth() {
-  const context = useContext(AuthContext)
+  const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider")
+    throw new Error("useAuth must be used within an AuthProvider");
   }
-  return context
+  return context;
 }
