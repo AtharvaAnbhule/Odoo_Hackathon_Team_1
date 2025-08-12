@@ -2,6 +2,11 @@
 
 An AI-driven rental platform with an integrated voice assistant, built for the **Odoo Hackathon 2025**. This app enables customers to browse, compare, and rent products seamlessly — featuring an AI assistant that can listen, speak, and respond to queries in real time.
 
+[![Watch the video](https://www.youtube.com/watch?v=WaNoYsruRO0)](https://www.youtube.com/watch?v=WaNoYsruRO0)
+
+
+
+
 ---
 
 ## 🚀 Features
