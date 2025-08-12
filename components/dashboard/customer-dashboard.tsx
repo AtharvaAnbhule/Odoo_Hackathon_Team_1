@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Card,
   CardContent,
@@ -27,6 +27,8 @@ import {
   Eye,
   Bell,
   User,
+  Download,
+  Printer,
 } from "lucide-react";
 import { ProductCatalog } from "@/components/products/product-catalog";
 import { BookingFlow } from "@/components/booking/booking-flow";
@@ -45,16 +47,21 @@ import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import type { Product, Booking } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 
 export function CustomerDashboard() {
   const { user } = useAuth();
   const { toast } = useToast();
   const router = useRouter();
+  const invoiceRef = useRef<HTMLDivElement>(null);
 
   const [showProductCatalog, setShowProductCatalog] = useState(false);
   const [showCalendar, setShowCalendar] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+  const [showInvoice, setShowInvoice] = useState(false);
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [showBooking, setShowBooking] = useState(false);
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -108,12 +115,10 @@ export function CustomerDashboard() {
   };
 
   const handleBookProduct = (productId: string) => {
-    // In a real app, you would fetch the product details from your API
     const product = {
       id: productId,
       name: "Example Product",
       basePrice: 100,
-      // Add other product properties as needed
     } as Product;
     setSelectedProduct(product);
     setShowBooking(true);
@@ -127,11 +132,107 @@ export function CustomerDashboard() {
     });
     setShowBooking(false);
     setSelectedProduct(null);
-    // Add the new booking to the state
     setBookings((prev) => [booking, ...prev]);
     router.push(
       `/customer/booking-success?bookingId=${booking.id || booking.id}`
     );
+  };
+
+  const handleViewInvoice = (booking: Booking) => {
+    setSelectedBooking(booking);
+    setShowInvoice(true);
+  };
+
+  // In your handleDownloadInvoice and handlePrintInvoice functions
+  const handleDownloadInvoice = async () => {
+    if (!invoiceRef.current) return;
+
+    try {
+      // Temporarily replace oklch colors with standard colors
+      const originalStyles = Array.from(document.querySelectorAll("style")).map(
+        (style) => style.innerHTML
+      );
+      document.querySelectorAll("style").forEach((style) => {
+        style.innerHTML = style.innerHTML.replace(
+          /oklch\([^)]*\)/g,
+          (match) => {
+            // Replace oklch with rgb or hex equivalents
+            if (match.includes("purple")) return "rgb(168, 85, 247)";
+            if (match.includes("blue")) return "rgb(59, 130, 246)";
+            // Add more replacements as needed
+            return "rgb(0, 0, 0)"; // default fallback
+          }
+        );
+      });
+
+      const canvas = await html2canvas(invoiceRef.current, {
+        scale: 2,
+        logging: true,
+        useCORS: true,
+      });
+
+      // Restore original styles
+      document.querySelectorAll("style").forEach((style, index) => {
+        style.innerHTML = originalStyles[index];
+      });
+
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF("p", "mm", "a4");
+      const imgWidth = 210;
+      const pageHeight = 295;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      pdf.save(`invoice-${selectedBooking?.id}.pdf`);
+      toast({
+        title: "Success",
+        description: "Invoice downloaded successfully",
+      });
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      toast({
+        title: "Error",
+        description: "Failed to generate invoice",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handlePrintInvoice = async () => {
+    if (!invoiceRef.current) return;
+
+    try {
+      const canvas = await html2canvas(invoiceRef.current, {
+        scale: 2,
+        logging: true,
+        useCORS: true,
+      });
+      const dataUrl = canvas.toDataURL();
+      const windowContent = `<!DOCTYPE html><html><head><title>Print Invoice</title></head><body><img src="${dataUrl}" /></body></html>`;
+      const printWin = window.open("", "", "width=800,height=600");
+      printWin?.document.write(windowContent);
+      printWin?.document.close();
+      printWin?.focus();
+      printWin?.print();
+    } catch (error) {
+      console.error("Error printing invoice:", error);
+      toast({
+        title: "Error",
+        description: "Failed to print invoice",
+        variant: "destructive",
+      });
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -166,6 +267,7 @@ export function CustomerDashboard() {
 
   return (
     <div className="space-y-6">
+      {/* Dashboard Header */}
       <Card className="bg-gradient-to-r from-blue-500 to-purple-600 text-white">
         <CardHeader>
           <CardTitle className="text-2xl">
@@ -196,6 +298,7 @@ export function CustomerDashboard() {
         </CardContent>
       </Card>
 
+      {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -264,6 +367,7 @@ export function CustomerDashboard() {
         </Card>
       </div>
 
+      {/* Current Rentals */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
@@ -332,9 +436,10 @@ export function CustomerDashboard() {
                     <Button
                       size="sm"
                       variant="outline"
-                      className="mt-2 bg-transparent">
+                      className="mt-2 bg-transparent"
+                      onClick={() => handleViewInvoice(booking)}>
                       <Eye className="h-4 w-4 mr-2" />
-                      View Details
+                      View Invoice
                     </Button>
                   </div>
                 </div>
@@ -353,6 +458,7 @@ export function CustomerDashboard() {
         </CardContent>
       </Card>
 
+      {/* Booking History */}
       <Card>
         <CardHeader>
           <CardTitle>Booking History</CardTitle>
@@ -410,8 +516,11 @@ export function CustomerDashboard() {
                       ₹{booking.totalPrice}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button size="sm" variant="outline">
-                        View
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleViewInvoice(booking)}>
+                        Invoice
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -422,6 +531,7 @@ export function CustomerDashboard() {
         </CardContent>
       </Card>
 
+      {/* Quick Actions */}
       <Card>
         <CardHeader>
           <CardTitle>Quick Actions</CardTitle>
@@ -454,8 +564,9 @@ export function CustomerDashboard() {
         </DialogContent>
       </Dialog>
 
+      {/* Calendar Dialog */}
       <Dialog open={showCalendar} onOpenChange={setShowCalendar}>
-        <DialogContent className="max-w-8xl w-900 max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Booking Calendar</DialogTitle>
             <DialogDescription>
@@ -466,6 +577,7 @@ export function CustomerDashboard() {
         </DialogContent>
       </Dialog>
 
+      {/* Notifications Dialog */}
       <Dialog open={showNotifications} onOpenChange={setShowNotifications}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -478,6 +590,7 @@ export function CustomerDashboard() {
         </DialogContent>
       </Dialog>
 
+      {/* Profile Dialog */}
       <Dialog open={showProfile} onOpenChange={setShowProfile}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -490,6 +603,163 @@ export function CustomerDashboard() {
         </DialogContent>
       </Dialog>
 
+      {/* Invoice Dialog */}
+      <Dialog open={showInvoice} onOpenChange={setShowInvoice}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Invoice Details</DialogTitle>
+            <DialogDescription>
+              Booking invoice for {selectedBooking?.productName}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex gap-4 mb-4">
+            <Button onClick={handleDownloadInvoice}>
+              <Download className="h-4 w-4 mr-2" />
+              Download PDF
+            </Button>
+            <Button variant="outline" onClick={handlePrintInvoice}>
+              <Printer className="h-4 w-4 mr-2" />
+              Print Invoice
+            </Button>
+          </div>
+
+          {/* Invoice Content */}
+          <div
+            ref={invoiceRef}
+            className="bg-white p-8 rounded-lg border shadow-sm">
+            <div className="flex justify-between items-start mb-8">
+              <div>
+                <h1 className="text-2xl font-bold">Rental Invoice</h1>
+                <p className="text-sm text-muted-foreground">
+                  Invoice #{selectedBooking?.id}
+                </p>
+              </div>
+              <div className="text-right">
+                <h2 className="text-xl font-semibold">RentalHub</h2>
+                <p className="text-sm text-muted-foreground">
+                  123 Rental Street, City
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  GSTIN: 22AAAAA0000A1Z5
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-8 mb-8">
+              <div>
+                <h3 className="font-medium mb-2">Billed To:</h3>
+                <p className="font-medium">{user?.name}</p>
+                <p className="text-sm text-muted-foreground">
+                  {selectedBooking?.customerEmail || user?.email}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {selectedBooking?.customerPhone || "N/A"}
+                </p>
+              </div>
+              <div className="text-right">
+                <h3 className="font-medium mb-2">Invoice Details:</h3>
+                <p className="text-sm">
+                  <span className="text-muted-foreground">Date: </span>
+                  {new Date(
+                    selectedBooking?.createdAt || Date.now()
+                  ).toLocaleDateString()}
+                </p>
+                <p className="text-sm">
+                  <span className="text-muted-foreground">Status: </span>
+                  <Badge
+                    className={getStatusColor(selectedBooking?.status || "")}>
+                    {selectedBooking?.status}
+                  </Badge>
+                </p>
+                <p className="text-sm">
+                  <span className="text-muted-foreground">Payment: </span>
+                  <Badge
+                    className={getPaymentStatusColor(
+                      selectedBooking?.paymentStatus || ""
+                    )}>
+                    {selectedBooking?.paymentStatus}
+                  </Badge>
+                </p>
+              </div>
+            </div>
+
+            <div className="border rounded-lg overflow-hidden mb-8">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Description</TableHead>
+                    <TableHead>Duration</TableHead>
+                    <TableHead>Price</TableHead>
+                    <TableHead>Qty</TableHead>
+                    <TableHead className="text-right">Amount</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  <TableRow>
+                    <TableCell className="font-medium">
+                      {selectedBooking?.productName}
+                    </TableCell>
+                    <TableCell>
+                      {new Date(
+                        selectedBooking?.startDate || Date.now()
+                      ).toLocaleDateString()}{" "}
+                      -{" "}
+                      {new Date(
+                        selectedBooking?.endDate || Date.now()
+                      ).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell>₹{selectedBooking?.productBasePrice}</TableCell>
+                    <TableCell>{selectedBooking?.quantity || 1}</TableCell>
+                    <TableCell className="text-right">
+                      ₹
+                      {selectedBooking?.baseAmount ||
+                        selectedBooking?.productBasePrice}
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </div>
+
+            <div className="grid grid-cols-2 gap-8">
+              <div>
+                <h3 className="font-medium mb-2">Notes:</h3>
+                <p className="text-sm text-muted-foreground">
+                  {selectedBooking?.notes || "Thank you for your business!"}
+                </p>
+              </div>
+              <div>
+                <div className="flex justify-between py-2">
+                  <span>Subtotal:</span>
+                  <span>
+                    ₹
+                    {selectedBooking?.baseAmount ||
+                      selectedBooking?.productBasePrice}
+                  </span>
+                </div>
+                <div className="flex justify-between py-2">
+                  <span>Discount:</span>
+                  <span>-₹{selectedBooking?.discountAmount || 0}</span>
+                </div>
+                <div className="flex justify-between py-2">
+                  <span>Tax (10%):</span>
+                  <span>₹{selectedBooking?.taxAmount || 0}</span>
+                </div>
+                <div className="flex justify-between py-2 font-bold border-t mt-2 pt-2">
+                  <span>Total:</span>
+                  <span>₹{selectedBooking?.totalPrice}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-8 pt-8 border-t text-center text-sm text-muted-foreground">
+              <p>Please make payment by the due date</p>
+              <p>For any questions, please contact support@rentalhub.com</p>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Booking Flow */}
       {selectedProduct && (
         <BookingFlow
           open={showBooking}

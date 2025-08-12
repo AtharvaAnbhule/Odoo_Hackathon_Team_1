@@ -58,7 +58,7 @@ export function useAPI<T = any>(
   return { data, loading, error, execute, reset }
 }
 
-// Specialized hooks for common API operations
+
 export function useAuth() {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
